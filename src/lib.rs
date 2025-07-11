@@ -310,7 +310,9 @@ impl<'a> Content {
                 (Event::Start(Tag::CodeBlock(code_block)), false) => {
                     let class_code_language = match code_block {
                         pulldown_cmark::CodeBlockKind::Indented
-                        | pulldown_cmark::CodeBlockKind::Fenced(pulldown_cmark::CowStr::Borrowed("")) => "".into(),
+                        | pulldown_cmark::CodeBlockKind::Fenced(
+                            pulldown_cmark::CowStr::Borrowed(""),
+                        ) => "".into(),
                         pulldown_cmark::CodeBlockKind::Fenced(language) => {
                             format!(" class=\"language-{language}\"")
                         }

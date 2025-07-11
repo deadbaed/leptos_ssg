@@ -58,7 +58,16 @@ fn main() {
         }
     }
     for post in content {
-        let publication_moment = format!("Posted on {} in {} ", post.meta().datetime().strftime("%B %d, %Y at %R"), post.meta().datetime().time_zone().iana_name().unwrap_or_default());
+        println!("processing {}", post.slug());
+        let publication_moment = format!(
+            "Posted on {} in {} ",
+            post.meta().datetime().strftime("%B %d, %Y at %R"),
+            post.meta()
+                .datetime()
+                .time_zone()
+                .iana_name()
+                .unwrap_or_default()
+        );
         let subtitle_view = view! {
             <div class=tw_join!("mt-4")>{publication_moment}<span data-relative-timestamp={post.meta().datetime().timestamp().as_millisecond()}></span></div>
         };
@@ -79,14 +88,15 @@ fn main() {
             &meta,
             navigation_in_posts(),
             view,
-            Some(leptos_ssg::html::syntax_highlight(post.code_block_languages())),
+            Some(leptos_ssg::html::syntax_highlight(
+                post.code_block_languages(),
+            )),
         )
         .to_html();
         let mut path: std::path::PathBuf = format!("./target/site/{}", post.slug()).into();
         std::fs::create_dir_all(&path).unwrap();
         path.push("index.html");
         std::fs::write(&path, post_page).unwrap();
-        println!("wrote post {}", path.display());
     }
 
     // 404
