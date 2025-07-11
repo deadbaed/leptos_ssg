@@ -1,0 +1,76 @@
+use crate::content::{Content, GenerateHtmlError};
+use crate::html::{BuildMeta, prelude::*};
+
+pub fn not_found_page<'a>(meta: BuildMeta<'a>) -> AnyView {
+    let view = leptos::view! {
+        <div>"This page could not be found."</div>
+        <div>"Perhaps the page you are looking for was moved, "{underline_link(meta.base_url, "go to the archive", None)}" to try finding it again?"</div>
+    }
+    .into_view();
+
+    crate::html::content_page("404 Not Found", meta, view, ())
+}
+
+pub fn content<'a, 'b>(
+    content: &'a Content,
+    meta: BuildMeta<'b>,
+) -> Result<AnyView, GenerateHtmlError<'a>> {
+    let subtitle = view! {
+            <div class=tw_join!("mt-4")>{format!(
+            "Posted on {} in {} ",
+            content.meta().datetime().strftime("%B %d, %Y at %R"),
+            content.meta()
+                .datetime()
+                .time_zone()
+                .iana_name()
+                .unwrap_or_default()
+        )}<span data-relative-timestamp={content.meta().datetime().timestamp().as_millisecond()}></span></div>
+    };
+
+    let content_html = content.generate_html()?;
+
+    Ok(crate::html::blog(
+        content.meta().title(),
+        subtitle,
+        meta,
+        crate::html::navigation(view! {
+            <li>{underline_link("/", "← Home", None)}</li>
+        }),
+        leptos::html::article().inner_html(content_html),
+        Some(crate::html::syntax_highlight(
+            content.code_block_languages(),
+        )),
+    ))
+}
+
+pub fn index<'a>(content: &[Content], meta: BuildMeta<'a>) -> AnyView {
+    let view = content
+        .iter()
+        .map(|post| {
+            leptos::view! {
+                <li class=tw_join!("flex", "flex-col", "lg:flex-wrap", "items-start")>
+                    <a class=tw_join!("font-medium", "text-lg") href={format!("{}{}", meta.base_url, post.slug())} >{post.meta().title()}</a>
+                    " "
+                    <time datetime=post.meta().datetime().to_string() class=tw_join!("flex-none", "text-gray-400", "text-lg")>{post.meta().datetime().strftime("%F").to_string()}</time>
+                </li>
+            }
+        }).collect_view(); // TODO: check for regressions
+    // .collect::<Vec<_>>();
+
+    crate::html::blog(
+        "deadbaed",
+        "broke my bed, now it's dead",
+        meta,
+        view! {
+                <li>{underline_link(format!("{}atom.xml", meta.base_url), "RSS", None)}</li>
+                <span class=tw_join!("mx-2", "text-gray-400")>"-"</span>
+                <li>{underline_link("https://philippeloctaux.com", "Website", None)}</li>
+        },
+        view! {
+            <ul class=tw_join!("space-y-6")>
+                {view}
+            </ul>
+        },
+        (),
+    )
+}

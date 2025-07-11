@@ -59,6 +59,16 @@ pub fn underline_link(
     .into_view()
 }
 
+pub fn navigation(children: impl IntoAny) -> impl IntoView {
+    view! {
+        <nav>
+            <ul class=tw_join!("flex", "flex-center", "my-2")>
+                {children.into_any()}
+            </ul>
+        </nav>
+    }
+}
+
 fn footer(timestamp: &Timestamp) -> impl IntoView {
     view! {
         <footer class=tw_join!("bg-black")>
