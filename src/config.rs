@@ -1,5 +1,4 @@
 use jiff::Timestamp;
-use std::path::Path;
 
 /// Configuration for a build
 #[derive(Debug, Clone, Copy)]

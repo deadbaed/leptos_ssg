@@ -44,7 +44,7 @@ impl<'a> Blog<'a> {
 
     pub fn build_index_page(&mut self, content: &[Content]) {
         self.pages
-            .push(("www/index.html".into(), pages::index(&content, self.config)));
+            .push(("www/index.html".into(), pages::index(content, self.config)));
     }
 
     pub fn build_posts_pages(&mut self, content: &[Content]) -> Result<(), GenerateHtmlError> {

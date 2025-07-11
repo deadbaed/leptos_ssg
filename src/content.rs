@@ -47,7 +47,7 @@ impl Content {
 
                 // Get slug out of filename
                 let post_id = post_id::get_post_id(path).map_err(ContentListError::PostId)?;
-                let slug = post_id::get_slug_from_post_id(post_id, &meta.datetime())
+                let slug = post_id::get_slug_from_post_id(post_id, meta.datetime())
                     .map_err(ContentListError::PostSlug)?;
 
                 vec.push(Content {
@@ -125,8 +125,6 @@ impl Content {
         let mut table_cell_idx = 0;
         let mut table_state = TableState::Head;
 
-        use leptos::prelude::*;
-
         // List of views ready to be used
         let mut views = vec![];
 
@@ -146,9 +144,9 @@ impl Content {
                 (
                     Event::Start(Tag::Heading {
                         level,
-                        id,
-                        classes,
-                        attrs,
+                        id: _id,
+                        classes: _classes,
+                        attrs: _attrs,
                     }),
                     false,
                 ) => {
@@ -192,10 +190,10 @@ impl Content {
                 // images
                 (
                     Event::Start(Tag::Image {
-                        link_type,
+                        link_type: _link_type,
                         dest_url,
                         title,
-                        id,
+                        id: _id,
                     }),
                     false,
                 ) => {
@@ -208,10 +206,10 @@ impl Content {
                 // links
                 (
                     Event::Start(Tag::Link {
-                        link_type,
+                        link_type: _link_type,
                         dest_url,
-                        title,
-                        id,
+                        title: _title,
+                        id: _id,
                     }),
                     false,
                 ) => {
@@ -340,7 +338,7 @@ impl Content {
 
                 // softbreak
                 (Event::SoftBreak, false) => {
-                    current_view.push_str("\n");
+                    current_view.push('\n');
                     views.push(current_view.clone());
                     current_view.clear();
                 }
@@ -470,7 +468,7 @@ impl Content {
                 }
 
                 // quotes
-                (Event::Start(Tag::BlockQuote(kind)), false) => {
+                (Event::Start(Tag::BlockQuote(_kind)), false) => {
                     current_view.push_str(
                         format!(
                             "<blockquote class=\"{}\">",
@@ -486,7 +484,7 @@ impl Content {
                         .as_ref(),
                     );
                 }
-                (Event::End(TagEnd::BlockQuote(kind)), false) => {
+                (Event::End(TagEnd::BlockQuote(_kind)), false) => {
                     current_view.push_str("</blockquote>");
                     views.push(current_view.clone());
                     current_view.clear();
@@ -519,7 +517,9 @@ impl Content {
                 (_, true) => {} // noop
 
                 // unhandled events
-                (event, false) => return Err(GenerateHtmlError::UnknownMarkdownEvent(event.into_static())),
+                (event, false) => {
+                    return Err(GenerateHtmlError::UnknownMarkdownEvent(event.into_static()));
+                }
             }
         }
 
