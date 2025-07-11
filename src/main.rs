@@ -62,8 +62,15 @@ fn main() {
         let subtitle_view = view! {
             <div class=tw_join!("mt-4")>{publication_moment}<span data-relative-timestamp={post.meta().datetime().timestamp().as_millisecond()}></span></div>
         };
+        let html = match post.generate_html() {
+            Ok(html) => html,
+            Err(e) => {
+                println!("{e}");
+                panic!();
+            }
+        };
         let view = view! {
-          {leptos::html::article().inner_html(post.generate_html())}
+          {leptos::html::article().inner_html(html)}
         }
         .into_any();
         let post_page = leptos_ssg::html::blog(

@@ -103,8 +103,16 @@ impl Content {
                 }
             })
     }
+}
 
-    pub fn generate_html(&self) -> String {
+#[derive(Debug, thiserror::Error)]
+pub enum GenerateHtmlError<'a> {
+    #[error("unhandled markdown event: {0:?}")]
+    UnknownMarkdownEvent(Event<'a>),
+}
+
+impl<'a> Content {
+    pub fn generate_html(&'a self) -> Result<String, GenerateHtmlError<'a>> {
         let markdown_events = Content::markdown_events(&self.raw);
         let mut ignore = false;
 
@@ -463,9 +471,11 @@ impl Content {
                 (_, true) => {} // noop
 
                 // unhandled events
-                (x, ignore) => println!("ignore: {ignore}, event {x:?}"),
+                (event, false) => return Err(GenerateHtmlError::UnknownMarkdownEvent(event)),
             }
         }
-        views.join("\n")
+
+        let html = views.join("\n");
+        Ok(html)
     }
 }
