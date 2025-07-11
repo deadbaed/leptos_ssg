@@ -81,9 +81,9 @@ fn stats() -> impl IntoView {
 }
 
 /// Metadata related to the build
-#[derive(Debug)]
-pub struct BuildMeta {
-    pub base_url: String,
+#[derive(Debug, Clone, Copy)]
+pub struct BuildMeta<'a> {
+    pub base_url: &'a str,
     pub timestamp: Timestamp,
 }
 
@@ -95,9 +95,9 @@ pub enum BuildMetaError {
     RoundTimestampToSecond(jiff::Error),
 }
 
-impl BuildMeta {
-    pub fn new<S: AsRef<str>>(base_url: S, timestamp: Timestamp) -> Result<Self, BuildMetaError> {
-        if !base_url.as_ref().ends_with("/") {
+impl<'a> BuildMeta<'a> {
+    pub fn new(base_url: &'a str, timestamp: Timestamp) -> Result<Self, BuildMetaError> {
+        if !base_url.ends_with("/") {
             return Err(BuildMetaError::BaseUrlRequiresTrailingSlash);
         }
 
@@ -106,7 +106,7 @@ impl BuildMeta {
             .map_err(BuildMetaError::RoundTimestampToSecond)?;
 
         Ok(Self {
-            base_url: base_url.as_ref().to_string(),
+            base_url,
             timestamp,
         })
     }
@@ -114,7 +114,7 @@ impl BuildMeta {
 
 pub fn shell(
     title: &str,
-    meta: &BuildMeta,
+    meta: BuildMeta,
     children: impl IntoAny,
     additional_js: impl IntoAny,
 ) -> AnyView {
@@ -199,7 +199,7 @@ fn container(children: impl IntoAny) -> impl IntoAny {
 
 pub fn content_page(
     title: &str,
-    meta: &BuildMeta,
+    meta: BuildMeta,
     children: impl IntoAny,
     additional_js: impl IntoAny,
 ) -> AnyView {
@@ -218,7 +218,7 @@ pub fn content_page(
 pub fn blog(
     title: &str,
     subtitle: impl IntoAny,
-    meta: &BuildMeta,
+    meta: BuildMeta,
     header: impl IntoAny,
     children: impl IntoAny,
     additional_js: impl IntoAny,
