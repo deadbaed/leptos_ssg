@@ -467,6 +467,38 @@ impl<'a> Content {
                     current_view.clear();
                 }
 
+                // quotes
+                (Event::Start(Tag::BlockQuote(kind)), false) => {
+                    current_view.push_str(
+                        format!(
+                            "<blockquote class=\"{}\">",
+                            tw_join!(
+                                "p-4",
+                                "my-4",
+                                "border-l-8",
+                                "border-solid",
+                                "border-gray-500",
+                                "bg-gray-800"
+                            )
+                        )
+                        .as_ref(),
+                    );
+                }
+                (Event::End(TagEnd::BlockQuote(kind)), false) => {
+                    current_view.push_str("</blockquote>");
+                    views.push(current_view.clone());
+                    current_view.clear();
+                }
+
+                // html blocks
+                (Event::Start(Tag::HtmlBlock), false) => {} // noop
+                (Event::End(TagEnd::HtmlBlock), false) => {} // noop
+
+                // html
+                (Event::Html(html), false) => {
+                    println!("raw html `{html}`");
+                }
+
                 // ignored events
                 (_, true) => {} // noop
 
