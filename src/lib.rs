@@ -92,8 +92,19 @@ impl<'a> Blog<'a> {
                 .map_err(|e| BlogWriteFilesError::CreateFolder(e.kind()))?;
 
             // Write html to file
+            let html = leptos::prelude::RenderHtml::to_html(view);
+            let html_bytes = if cfg!(debug_assertions) {
+                html.into_bytes()
+            } else {
+                // Minify everything
+                let mut cfg = minify_html::Cfg::new();
+                cfg.minify_js = true;
+
+                minify_html::minify(html.as_ref(), &cfg)
+            };
+
             let html_document = target.join(path);
-            std::fs::write(&html_document, leptos::prelude::RenderHtml::to_html(view))
+            std::fs::write(&html_document, html_bytes)
                 .map_err(|e| BlogWriteFilesError::WriteFile(html_document.clone(), e.kind()))?;
             println!("wrote `{}` to {}", slug.display(), html_document.display());
         }

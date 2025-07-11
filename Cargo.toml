@@ -11,3 +11,4 @@ slug = "0.1"
 leptos = { version = "0.8", features = ["ssr"] }
 tailwind_fuse = { version = "0.3", features = ["variant"] }
 thiserror = "2"
+minify-html = "0.16"
