@@ -13,7 +13,7 @@ pub struct Content {
     slug: Slug,
 }
 
-type Slug = String;
+pub type Slug = String;
 
 #[derive(Debug, thiserror::Error)]
 pub enum ContentListError {
@@ -106,13 +106,13 @@ impl Content {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum GenerateHtmlError<'a> {
+pub enum GenerateHtmlError {
     #[error("unhandled markdown event: {0:?}")]
-    UnknownMarkdownEvent(Event<'a>),
+    UnknownMarkdownEvent(Event<'static>),
 }
 
-impl<'a> Content {
-    pub fn generate_html(&'a self) -> Result<String, GenerateHtmlError<'a>> {
+impl Content {
+    pub fn generate_html(&self) -> Result<String, GenerateHtmlError> {
         let markdown_events = Content::markdown_events(&self.raw);
         let mut ignore = false;
 
@@ -519,7 +519,7 @@ impl<'a> Content {
                 (_, true) => {} // noop
 
                 // unhandled events
-                (event, false) => return Err(GenerateHtmlError::UnknownMarkdownEvent(event)),
+                (event, false) => return Err(GenerateHtmlError::UnknownMarkdownEvent(event.into_static())),
             }
         }
 

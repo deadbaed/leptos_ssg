@@ -12,10 +12,10 @@ pub fn not_found_page<'a>(config: BuildConfig<'a>) -> AnyView {
     crate::html::content_page("404 Not Found", config, view, ())
 }
 
-pub fn content<'a, 'b>(
-    content: &'a Content,
-    config: BuildConfig<'b>,
-) -> Result<AnyView, GenerateHtmlError<'a>> {
+pub fn content(
+    content: &Content,
+    config: BuildConfig,
+) -> Result<AnyView, GenerateHtmlError> {
     let subtitle = view! {
             <div class=tw_join!("mt-4")>{format!(
             "Posted on {} in {} ",
