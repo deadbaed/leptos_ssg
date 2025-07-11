@@ -60,6 +60,8 @@ impl Content {
 
         // Sort by descending order
         Ok(Self::sort_desc(vec))
+
+        // TODO: add previous/next navigation, add icons
     }
 
     /// Sort by descending order, the first item is the newest one
