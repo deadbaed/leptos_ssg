@@ -55,18 +55,17 @@ pub fn index<'a>(content: &[Content], config: BuildConfig<'a>) -> AnyView {
                     <time datetime=post.meta().datetime().to_string() class=tw_join!("flex-none", "text-gray-400", "text-lg")>{post.meta().datetime().strftime("%F").to_string()}</time>
                 </li>
             }
-        }).collect_view(); // TODO: check for regressions
-    // .collect::<Vec<_>>();
+        }).collect_view();
 
     crate::html::blog(
         "deadbaed",
         "broke my bed, now it's dead",
         config,
-        view! {
+        crate::html::navigation(view! {
                 <li>{underline_link(format!("{}atom.xml", config.base_url), "RSS", None)}</li>
                 <span class=tw_join!("mx-2", "text-gray-400")>"-"</span>
                 <li>{underline_link("https://philippeloctaux.com", "Website", None)}</li>
-        },
+        }),
         view! {
             <ul class=tw_join!("space-y-6")>
                 {view}
