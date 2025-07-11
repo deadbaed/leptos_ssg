@@ -5,17 +5,23 @@ use crate::html::prelude::*;
 pub fn not_found_page<'a>(config: BuildConfig<'a>) -> AnyView {
     let view = leptos::view! {
         <div>"This page could not be found."</div>
-        <div>"Perhaps the page you are looking for was moved, "{underline_link(config.base_url, "go to the archive", None)}" to try finding it again?"</div>
+        <div>"Perhaps the page you are looking for was moved, "{underline_link(config.base_url, "go to the archive", None)}" to find it!"</div>
     }
     .into_view();
 
-    crate::html::content_page("404 Not Found", config, view, ())
+    crate::html::blog(
+        "404 Not Found",
+        icon_face_frown(None),
+        config,
+        crate::html::navigation(view! {
+            <li>{underline_link("/",view!{ {icon_home(None)}"Home" }, None)}</li>
+        }),
+        view,
+        (),
+    )
 }
 
-pub fn content(
-    content: &Content,
-    config: BuildConfig,
-) -> Result<AnyView, GenerateHtmlError> {
+pub fn content(content: &Content, config: BuildConfig) -> Result<AnyView, GenerateHtmlError> {
     let subtitle = view! {
             <div class=tw_join!("mt-4")>{format!(
             "Posted on {} in {} ",
@@ -35,7 +41,7 @@ pub fn content(
         subtitle,
         config,
         crate::html::navigation(view! {
-            <li>{underline_link("/", "← Home", None)}</li>
+            <li>{underline_link("/",view!{ {icon_home(None)}"Home" }, None)}</li>
         }),
         leptos::html::article().inner_html(content_html),
         Some(crate::html::syntax_highlight(
@@ -62,9 +68,8 @@ pub fn index<'a>(content: &[Content], config: BuildConfig<'a>) -> AnyView {
         "broke my bed, now it's dead",
         config,
         crate::html::navigation(view! {
-                <li>{underline_link(format!("{}atom.xml", config.base_url), "RSS", None)}</li>
-                <span class=tw_join!("mx-2", "text-gray-400")>"-"</span>
-                <li>{underline_link("https://philippeloctaux.com", "Website", None)}</li>
+                <li>{underline_link(format!("{}atom.xml", config.base_url), view!{ {icon_rss(Some(tw_join!("text-yellow-400")))}"RSS" }, None)}</li>
+                <li>{underline_link("https://philippeloctaux.com", view!{ {icon_website(Some(tw_join!("text-yellow-400")))}"Website" }, None)}</li>
         }),
         view! {
             <ul class=tw_join!("space-y-6")>

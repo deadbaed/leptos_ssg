@@ -1,9 +1,11 @@
 pub mod prelude {
+    pub use super::icons::*;
     pub use super::underline_link;
     pub use leptos::prelude::*;
     pub use tailwind_fuse::tw_join;
     pub use tailwind_fuse::tw_merge;
 }
+mod icons;
 
 use crate::config::BuildConfig;
 use jiff::Timestamp;
@@ -47,14 +49,14 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
 pub fn underline_link(
     url: impl ToString,
-    label: impl ToString,
+    children: impl IntoAny,
     class: Option<String>,
 ) -> impl IntoView {
     let class = class.unwrap_or_default();
     let class = tw_merge!("underline", "text-yellow-400", class);
     view! {
         <a href=url.to_string() class=class>
-            {label.to_string()}
+            {children.into_any()}
         </a>
     }
     .into_view()
@@ -63,7 +65,7 @@ pub fn underline_link(
 pub fn navigation(children: impl IntoAny) -> impl IntoView {
     view! {
         <nav>
-            <ul class=tw_join!("flex", "flex-center", "my-2")>
+            <ul class=tw_join!("flex", "flex-center", "my-2", "space-x-6")>
                 {children.into_any()}
             </ul>
         </nav>
@@ -173,24 +175,6 @@ fn container(children: impl IntoAny) -> impl IntoAny {
             {children.into_any()}
         </div>
     }
-}
-
-pub fn content_page(
-    title: &str,
-    config: BuildConfig,
-    children: impl IntoAny,
-    additional_js: impl IntoAny,
-) -> AnyView {
-    shell(
-        title,
-        config,
-        container(view! {
-            <h1 class=tw_join!("text-4xl", "font-bold")>{title.to_string()}</h1>
-            <div class=tw_join!("mt-8")>{children.into_any()}</div>
-        }),
-        additional_js,
-    )
-    .into_any()
 }
 
 pub fn blog(
