@@ -5,3 +5,4 @@ pub mod html;
 mod metadata;
 mod post_id;
 pub mod pages;
+pub mod config;

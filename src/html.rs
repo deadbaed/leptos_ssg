@@ -5,6 +5,7 @@ pub mod prelude {
     pub use tailwind_fuse::tw_merge;
 }
 
+use crate::config::BuildConfig;
 use jiff::Timestamp;
 use prelude::*;
 
@@ -90,41 +91,9 @@ fn stats() -> impl IntoView {
     }
 }
 
-/// Metadata related to the build
-#[derive(Debug, Clone, Copy)]
-pub struct BuildMeta<'a> {
-    pub base_url: &'a str,
-    pub timestamp: Timestamp,
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum BuildMetaError {
-    #[error("A trailing slash `/` is required at the end of the base url")]
-    BaseUrlRequiresTrailingSlash,
-    #[error("Failed to round timestamp to the nearest second")]
-    RoundTimestampToSecond(jiff::Error),
-}
-
-impl<'a> BuildMeta<'a> {
-    pub fn new(base_url: &'a str, timestamp: Timestamp) -> Result<Self, BuildMetaError> {
-        if !base_url.ends_with("/") {
-            return Err(BuildMetaError::BaseUrlRequiresTrailingSlash);
-        }
-
-        let timestamp = timestamp
-            .round(jiff::Unit::Second)
-            .map_err(BuildMetaError::RoundTimestampToSecond)?;
-
-        Ok(Self {
-            base_url,
-            timestamp,
-        })
-    }
-}
-
 pub fn shell(
     title: &str,
-    meta: BuildMeta,
+    config: BuildConfig,
     children: impl IntoAny,
     additional_js: impl IntoAny,
 ) -> AnyView {
@@ -134,7 +103,6 @@ pub fn shell(
     } else {
         title.into()
     };
-    let style_uri = format!("{}style.css", meta.base_url);
 
     let relative_timestamp = r#"
 function formatRelativeTime(durationInSeconds) {
@@ -181,7 +149,7 @@ elements.forEach(element => {
             <head>
                 <meta charset="utf-8" />
                 <meta name="viewport" content="width=device-width" />
-                <link rel="stylesheet" href={style_uri} />
+                <link rel="stylesheet" href={format!("{}{}", config.base_url, config.stylesheet_name)} />
                 <title>{title}</title>
             </head>
 
@@ -189,7 +157,7 @@ elements.forEach(element => {
                 <main class=tw_join!("flex-grow")>
                     {children.into_any()}
                 </main>
-                {footer(&meta.timestamp)}
+                {footer(&config.timestamp)}
                 <script inner_html=relative_timestamp></script>
                 {stats()}
                 {additional_js.into_any()}
@@ -209,13 +177,13 @@ fn container(children: impl IntoAny) -> impl IntoAny {
 
 pub fn content_page(
     title: &str,
-    meta: BuildMeta,
+    config: BuildConfig,
     children: impl IntoAny,
     additional_js: impl IntoAny,
 ) -> AnyView {
     shell(
         title,
-        meta,
+        config,
         container(view! {
             <h1 class=tw_join!("text-4xl", "font-bold")>{title.to_string()}</h1>
             <div class=tw_join!("mt-8")>{children.into_any()}</div>
@@ -228,14 +196,14 @@ pub fn content_page(
 pub fn blog(
     title: &str,
     subtitle: impl IntoAny,
-    meta: BuildMeta,
+    config: BuildConfig,
     header: impl IntoAny,
     children: impl IntoAny,
     additional_js: impl IntoAny,
 ) -> AnyView {
     shell(
         title,
-        meta,
+        config,
         container(view! {
             <h1 class=tw_join!("text-4xl", "font-bold")>{title.to_string()}</h1>
             <div class=tw_join!("text-xl", "font-medium")>{subtitle.into_any()}</div>

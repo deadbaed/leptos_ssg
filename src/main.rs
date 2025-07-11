@@ -2,20 +2,21 @@ fn main() {
     let target: std::path::PathBuf = "/Users/phil/x/leptos_ssg/target/aaaa".into();
     let target = target.as_path();
 
-    let meta = leptos_ssg::html::BuildMeta::new("/", jiff::Timestamp::now()).unwrap();
+    let config =
+        leptos_ssg::config::BuildConfig::new("/", jiff::Timestamp::now(), "style.css").unwrap();
     let content = leptos_ssg::content::Content::scan_path("/Users/phil/x/blog/content/").unwrap();
 
     let mut list_of_pages = vec![];
 
-    list_of_pages.push(("404.html".into(), leptos_ssg::pages::not_found_page(meta)));
+    list_of_pages.push(("404.html".into(), leptos_ssg::pages::not_found_page(config)));
     list_of_pages.push((
         "index.html".into(),
-        leptos_ssg::pages::index(&content, meta),
+        leptos_ssg::pages::index(&content, config),
     ));
 
     let (ok, err): (Vec<_>, Vec<_>) = content
         .iter()
-        .map(|content| (content.slug(), leptos_ssg::pages::content(content, meta)))
+        .map(|content| (content.slug(), leptos_ssg::pages::content(content, config)))
         .partition(|(_, html)| html.is_ok());
 
     let ok = ok
