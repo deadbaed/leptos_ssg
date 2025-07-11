@@ -82,6 +82,7 @@ impl Content {
         let mut options = pulldown_cmark::Options::empty();
         options.insert(pulldown_cmark::Options::ENABLE_PLUSES_DELIMITED_METADATA_BLOCKS);
         options.insert(pulldown_cmark::Options::ENABLE_TABLES);
+        options.insert(pulldown_cmark::Options::ENABLE_TASKLISTS);
         let parser = pulldown_cmark::Parser::new_ext(input, options);
 
         let iterator = pulldown_cmark::TextMergeStream::new(parser);
@@ -488,6 +489,20 @@ impl<'a> Content {
                 }
                 (Event::End(TagEnd::BlockQuote(kind)), false) => {
                     current_view.push_str("</blockquote>");
+                    views.push(current_view.clone());
+                    current_view.clear();
+                }
+
+                // checkboxes
+                (Event::TaskListMarker(checked), false) => {
+                    let checked = if checked { "checked" } else { "" };
+                    current_view.push_str(
+                        format!(
+                            "<input type=\"checkbox\" {checked} class=\"{}\" />",
+                            tw_join!("accent-yellow-600")
+                        )
+                        .as_ref(),
+                    );
                     views.push(current_view.clone());
                     current_view.clear();
                 }
