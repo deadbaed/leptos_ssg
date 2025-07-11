@@ -28,6 +28,18 @@ pub struct Blog<'a> {
     pages: Vec<(PathBuf, leptos::prelude::AnyView)>,
 }
 
+#[cfg(debug_assertions)]
+const EXTRA_FOLDER: &str = "";
+
+#[cfg(debug_assertions)]
+const WWW_FOLDER: &str = "";
+
+#[cfg(not(debug_assertions))]
+const EXTRA_FOLDER: &str = "extra/";
+
+#[cfg(not(debug_assertions))]
+const WWW_FOLDER: &str = "www/";
+
 impl<'a> Blog<'a> {
     pub fn new(target: PathBuf, config: config::BuildConfig<'a>) -> Self {
         Self {
@@ -39,12 +51,12 @@ impl<'a> Blog<'a> {
 
     pub fn build_404_page(&mut self) {
         self.pages
-            .push(("extra/404.html".into(), pages::not_found_page(self.config)));
+            .push((format!("{EXTRA_FOLDER}404.html").into(), pages::not_found_page(self.config)));
     }
 
     pub fn build_index_page(&mut self, content: &[Content]) {
         self.pages
-            .push(("www/index.html".into(), pages::index(content, self.config)));
+            .push((format!("{WWW_FOLDER}index.html").into(), pages::index(content, self.config)));
     }
 
     pub fn build_posts_pages(&mut self, content: &[Content]) -> Result<(), GenerateHtmlError> {
@@ -55,7 +67,7 @@ impl<'a> Blog<'a> {
 
         let ok = ok
             .into_iter()
-            .map(|(slug, html)| (format!("www/{slug}/index.html"), Result::unwrap(html)))
+            .map(|(slug, html)| (format!("{WWW_FOLDER}{slug}/index.html"), Result::unwrap(html)))
             .collect::<Vec<_>>();
 
         let err = err
