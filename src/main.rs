@@ -5,7 +5,7 @@ fn main() {
 
     let content = leptos_ssg::Content::scan_path("/Users/phil/x/blog/content/").unwrap();
     blog.build_index_page(&content);
-    blog.build_posts_pages(&content)
+    blog.build_content_pages(&content)
         .expect("processed markdown files");
     blog.build_404_page();
 

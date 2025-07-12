@@ -1,5 +1,5 @@
 mod metadata;
-mod post_id;
+mod content_id;
 
 use metadata::*;
 use pulldown_cmark::Event;
@@ -20,14 +20,14 @@ pub type Slug = String;
 
 #[derive(Debug, thiserror::Error)]
 pub enum ContentListError {
-    #[error("Failed to read content of Post")]
+    #[error("Failed to read Content")]
     ReadFile(std::io::ErrorKind),
-    #[error("Failed to parse metadata of Post: {0}")]
+    #[error("Failed to parse metadata of content: {0}")]
     ParseMetadata(MetadataParseError),
-    #[error("Failed to get Post Id: {0}")]
-    PostId(post_id::GetPostIdError),
-    #[error("Failed to get Post Slug: {0}")]
-    PostSlug(post_id::SlugFromPostIdError),
+    #[error("Failed to get ContentId: {0}")]
+    ContentId(content_id::GetContentIdError),
+    #[error("Failed to get ContentSlug: {0}")]
+    ContentSlug(content_id::SlugFromContentIdError),
 }
 
 impl Content {
@@ -49,9 +49,9 @@ impl Content {
                     .map_err(ContentListError::ParseMetadata)?;
 
                 // Get slug out of filename
-                let post_id = post_id::get_post_id(path).map_err(ContentListError::PostId)?;
-                let slug = post_id::get_slug_from_post_id(post_id, meta.datetime())
-                    .map_err(ContentListError::PostSlug)?;
+                let content_id = content_id::get_content_id(path).map_err(ContentListError::ContentId)?;
+                let slug = content_id::get_slug_from_content_id(content_id, meta.datetime())
+                    .map_err(ContentListError::ContentSlug)?;
 
                 vec.push(Content {
                     path: path.to_path_buf(),

@@ -53,12 +53,12 @@ pub fn content(content: &Content, config: BuildConfig) -> Result<AnyView, Genera
 pub fn index<'a>(content: &[Content], config: BuildConfig<'a>) -> AnyView {
     let view = content
         .iter()
-        .map(|post| {
+        .map(|content| {
             leptos::view! {
                 <li class=tw_join!("flex", "flex-col", "lg:flex-wrap", "items-start")>
-                    <a class=tw_join!("font-medium", "text-lg") href={format!("{}{}", config.base_url, post.slug())} >{post.meta().title()}</a>
+                    <a class=tw_join!("font-medium", "text-lg") href={format!("{}{}", config.base_url, content.slug())} >{content.meta().title()}</a>
                     " "
-                    <time datetime=post.meta().datetime().to_string() class=tw_join!("flex-none", "text-gray-400", "text-lg")>{post.meta().datetime().strftime("%F").to_string()}</time>
+                    <time datetime=content.meta().datetime().to_string() class=tw_join!("flex-none", "text-gray-400", "text-lg")>{content.meta().datetime().strftime("%F").to_string()}</time>
                 </li>
             }
         }).collect_view();

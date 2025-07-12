@@ -57,7 +57,7 @@ impl<'a> Blog<'a> {
             .push((format!("{WWW_FOLDER}index.html").into(), pages::index(content, self.config)));
     }
 
-    pub fn build_posts_pages(&mut self, content: &[Content]) -> Result<(), GenerateHtmlError> {
+    pub fn build_content_pages(&mut self, content: &[Content]) -> Result<(), GenerateHtmlError> {
         let (ok, err): (Vec<_>, Vec<_>) = content
             .iter()
             .map(|content| (content.slug(), pages::content(content, self.config)))
