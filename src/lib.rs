@@ -6,11 +6,11 @@ mod pages;
 pub use config::BuildConfig;
 pub use content::{Content, GenerateHtmlError};
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, thiserror::Error)]
 pub enum BlogWriteFilesError {
-    #[error("Content `{0}` does not have a parent folder")]
+    #[error("File `{0}` does not have a parent folder")]
     NoParentFolder(PathBuf),
 
     #[error("Failed to created folder: {0}")]
@@ -20,10 +20,17 @@ pub enum BlogWriteFilesError {
     WriteFile(PathBuf, std::io::ErrorKind),
 }
 
-pub struct Blog<'a> {
+#[derive(Debug)]
+struct CopyAsset {
+    source: PathBuf,
     target: PathBuf,
-    config: BuildConfig<'a>,
+}
+
+pub struct Blog<'config> {
+    target: PathBuf,
+    config: BuildConfig<'config>,
     pages: Vec<(PathBuf, leptos::prelude::AnyView)>,
+    assets: Vec<CopyAsset>,
 }
 
 #[cfg(debug_assertions)]
@@ -38,26 +45,31 @@ const EXTRA_FOLDER: &str = "extra/";
 #[cfg(not(debug_assertions))]
 const WWW_FOLDER: &str = "www/";
 
-impl<'a> Blog<'a> {
-    pub fn new(target: PathBuf, config: config::BuildConfig<'a>) -> Self {
+impl<'config> Blog<'config> {
+    pub fn new(target: PathBuf, config: config::BuildConfig<'config>) -> Self {
         Self {
             target,
             config,
             pages: vec![],
+            assets: vec![],
         }
     }
 
-    pub fn build_404_page(&mut self) {
-        self.pages
-            .push((format!("{EXTRA_FOLDER}404.html").into(), pages::not_found_page(self.config)));
+    pub fn add_404_page(&mut self) {
+        self.pages.push((
+            format!("{EXTRA_FOLDER}404.html").into(),
+            pages::not_found_page(self.config),
+        ));
     }
 
-    pub fn build_index_page(&mut self, content: &[Content]) {
-        self.pages
-            .push((format!("{WWW_FOLDER}index.html").into(), pages::index(content, self.config)));
+    pub fn add_index_page(&mut self, content: &[Content]) {
+        self.pages.push((
+            format!("{WWW_FOLDER}index.html").into(),
+            pages::index(content, self.config),
+        ));
     }
 
-    pub fn build_content_pages(&mut self, content: &[Content]) -> Result<(), GenerateHtmlError> {
+    pub fn add_content_pages(&mut self, content: &[Content]) -> Result<(), GenerateHtmlError> {
         let (ok, err): (Vec<_>, Vec<_>) = content
             .iter()
             .map(|content| (content.slug(), pages::content(content, self.config)))
@@ -65,7 +77,12 @@ impl<'a> Blog<'a> {
 
         let ok = ok
             .into_iter()
-            .map(|(slug, html)| (format!("{WWW_FOLDER}{slug}/index.html"), Result::unwrap(html)))
+            .map(|(slug, html)| {
+                (
+                    format!("{WWW_FOLDER}{slug}/index.html"),
+                    Result::unwrap(html),
+                )
+            })
             .collect::<Vec<_>>();
 
         let err = err
@@ -88,35 +105,112 @@ impl<'a> Blog<'a> {
         Ok(())
     }
 
-    pub fn write_files(self) -> Result<PathBuf, BlogWriteFilesError> {
+    pub fn add_content_assets(&mut self, content_path: &Path, content: &[Content]) {
+        content
+            .iter()
+            // The names are not the same between content and final folder (since it is public)
+            .flat_map(|content| content.assets().map(|assets| (assets, content.slug())))
+            .for_each(|(assets, slug)| {
+                // Base paths for source and target locations
+                let source_base = content_path.join(assets);
+                let target_base = self.target.join(slug);
+
+                // Gather list of source assets
+                let source_assets = walkdir::WalkDir::new(&source_base)
+                    .into_iter()
+                    .filter_map(|e| e.ok())
+                    .map(|dir_entry| dir_entry.into_path())
+                    .filter(|path| {
+                        infer::get_from_path(path)
+                            .map(|file_type| {
+                                file_type.map_or(false, |ft| {
+                                    use infer::MatcherType;
+                                    ft.matcher_type() == MatcherType::Image
+                                        || ft.matcher_type() == MatcherType::Audio
+                                        || ft.matcher_type() == MatcherType::Video
+                                })
+                            })
+                            .unwrap_or(false)
+                    });
+
+                // For each source asset, get its target path
+                let source_and_target_assets = source_assets.filter_map(|source| {
+                    // Remove source prefix
+                    source
+                        .strip_prefix(&source_base)
+                        .map(|path| path.to_path_buf())
+                        // Add target prefix instead
+                        .map(|path| target_base.join(path))
+                        .ok()
+                        // Keep both source and target paths
+                        .map(|target| (source, target))
+                });
+
+                // Add to the list of assets
+                source_and_target_assets.for_each(|(source, target)| {
+                    self.assets.push(CopyAsset { source, target });
+                });
+            });
+    }
+
+    pub fn write_view_to_file(
+        view: leptos::prelude::AnyView,
+        base_path: &Path,
+        path: &Path,
+    ) -> Result<PathBuf, BlogWriteFilesError> {
+        // Create all parent directories
+        let parent = path
+            .parent()
+            .ok_or(BlogWriteFilesError::NoParentFolder(path.to_path_buf()))?;
+        std::fs::create_dir_all(base_path.join(parent))
+            .map_err(|e| BlogWriteFilesError::CreateFolder(e.kind()))?;
+
+        // Write html to file
+        let html = leptos::prelude::RenderHtml::to_html(view);
+        let html_bytes = if cfg!(debug_assertions) {
+            html.into_bytes()
+        } else {
+            // Minify everything
+            let mut cfg = minify_html::Cfg::new();
+            cfg.minify_js = true;
+
+            minify_html::minify(html.as_ref(), &cfg)
+        };
+
+        let html_document = base_path.join(&path);
+        std::fs::write(&html_document, html_bytes)
+            .map_err(|e| BlogWriteFilesError::WriteFile(html_document.clone(), e.kind()))?;
+        println!("wrote `{}` to {}", path.display(), html_document.display());
+
+        Ok(html_document)
+    }
+
+    pub fn copy_asset(source: &Path, target: &Path) -> Result<(), BlogWriteFilesError> {
+        // Create parent directory if it does note exist
+        let parent = target
+            .parent()
+            .ok_or(BlogWriteFilesError::NoParentFolder(target.to_path_buf()))?;
+        std::fs::create_dir_all(parent).map_err(|e| BlogWriteFilesError::CreateFolder(e.kind()))?;
+
+        // Copy file
+        std::fs::copy(source, target)
+            .map_err(|e| BlogWriteFilesError::WriteFile(target.to_path_buf(), e.kind()))?;
+
+        println!("copied `{}` to `{}`", source.display(), target.display());
+
+        Ok(())
+    }
+
+    /// Consume struct, write to files
+    pub fn build(self) -> Result<PathBuf, BlogWriteFilesError> {
         let target = self.target.as_path();
 
-        for (slug, view) in self.pages {
-            let path = PathBuf::from(&slug);
+        for (path, view) in self.pages {
+            Self::write_view_to_file(view, target, &path)?;
+        }
 
-            // Create all parent directories
-            let parent = path
-                .parent()
-                .ok_or(BlogWriteFilesError::NoParentFolder(slug.clone()))?;
-            std::fs::create_dir_all(target.join(parent))
-                .map_err(|e| BlogWriteFilesError::CreateFolder(e.kind()))?;
-
-            // Write html to file
-            let html = leptos::prelude::RenderHtml::to_html(view);
-            let html_bytes = if cfg!(debug_assertions) {
-                html.into_bytes()
-            } else {
-                // Minify everything
-                let mut cfg = minify_html::Cfg::new();
-                cfg.minify_js = true;
-
-                minify_html::minify(html.as_ref(), &cfg)
-            };
-
-            let html_document = target.join(path);
-            std::fs::write(&html_document, html_bytes)
-                .map_err(|e| BlogWriteFilesError::WriteFile(html_document.clone(), e.kind()))?;
-            println!("wrote `{}` to {}", slug.display(), html_document.display());
+        for copy_asset in self.assets {
+            Self::copy_asset(&copy_asset.source, &copy_asset.target)?;
         }
 
         Ok(self.target)

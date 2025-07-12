@@ -92,6 +92,10 @@ impl Content {
         &self.meta
     }
 
+    pub fn assets(&self) -> Option<&Path> {
+        self.assets.as_deref()
+    }
+
     fn markdown_events<'input>(input: &'input str) -> Vec<Event<'input>> {
         let mut options = pulldown_cmark::Options::empty();
         options.insert(pulldown_cmark::Options::ENABLE_PLUSES_DELIMITED_METADATA_BLOCKS);
@@ -571,9 +575,9 @@ impl Content {
                                     })
                                     .unwrap_or(false)
                             })
-                            // Get relative path to be accept in the html
-                            .filter_map(|x| {
-                                x.strip_prefix(assets).map(|path| path.to_path_buf()).ok()
+                            // Get relative path to be accepted in the html
+                            .filter_map(|path| {
+                                path.strip_prefix(assets).map(|path| path.to_path_buf()).ok()
                             })
                             // For each image, create html view
                         .map(|path| {
