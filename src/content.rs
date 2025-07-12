@@ -217,7 +217,7 @@ impl Content {
                     false,
                 ) => {
                     current_view.push_str(
-                        format!("<img loading=\"lazy\" src={dest_url} alt=\"{title}\" />").as_ref(),
+                        format!("<img loading=\"lazy\" src={dest_url} alt=\"{title}\" class=\"{}\" />", tw_join!("my-4")).as_ref(),
                     );
                 }
                 (Event::End(TagEnd::Image), _) => {} // noop
@@ -561,7 +561,7 @@ impl Content {
                         let directory = assets.join(attribute);
 
                         // Collect list of images
-                        let list_images = walkdir::WalkDir::new(&directory)
+                        let mut list_images = walkdir::WalkDir::new(&directory)
                             .into_iter()
                             .filter_map(|e| e.ok())
                             .map(|dir_entry| dir_entry.into_path())
@@ -577,25 +577,30 @@ impl Content {
                             })
                             // Get relative path to be accepted in the html
                             .filter_map(|path| {
-                                path.strip_prefix(assets).map(|path| path.to_path_buf()).ok()
+                                path.strip_prefix(assets)
+                                    .map(|path| path.to_path_buf())
+                                    .ok()
                             })
-                            // For each image, create html view
-                        .map(|path| {
+                            .collect::<Vec<_>>();
+
+                        // Sort by name
+                        list_images.sort();
+
+                        // For each image, create html view
+                        let list_images = list_images.into_iter().map(|path| {
                             let filename = path.file_name().and_then(|file| file.to_str()).map(|file| file.to_string()).unwrap();
                             let path = path.to_str().unwrap();
 
                             view! {
-                                <div>
-                                    <a href={path.to_string()}>
-                                        <img loading="lazy" class=tw_join!("h-auto", "max-w-full", "rounded-lg") src={path.to_string()} alt=filename />
+                                    <a class=tw_join!("w-full", "h-full", "border-2", "border-dashed", "border-yellow-600") href={path.to_string()}>
+                                        <img loading="lazy" class=tw_join!("h-auto", "max-w-32") src={path.to_string()} alt=filename />
                                     </a>
-                                </div>
                             }
                         }).collect_view();
 
                         // Final view with images
                         leptos::view! {
-                            <div class=tw_join!("grid", "grid-cols-2", "gap-5")>
+                            <div class=tw_join!("my-4", "grid", "grid-cols-2", "gap-5")>
                                 {list_images}
                             </div>
                         }
