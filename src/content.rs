@@ -1,5 +1,5 @@
-mod metadata;
 mod content_id;
+mod metadata;
 
 use metadata::*;
 use pulldown_cmark::Event;
@@ -14,6 +14,7 @@ pub struct Content {
     raw: String,
     meta: MetadataList,
     slug: Slug,
+    assets: Option<PathBuf>,
 }
 
 pub type Slug = String;
@@ -49,15 +50,23 @@ impl Content {
                     .map_err(ContentListError::ParseMetadata)?;
 
                 // Get slug out of filename
-                let content_id = content_id::get_content_id(path).map_err(ContentListError::ContentId)?;
-                let slug = content_id::get_slug_from_content_id(content_id, meta.datetime())
+                let content_id =
+                    content_id::ContentId::from_path(path).map_err(ContentListError::ContentId)?;
+                let slug = content_id::get_slug_from_content_id(&content_id, meta.datetime())
                     .map_err(ContentListError::ContentSlug)?;
+
+                // Assets
+                let assets = match content_id {
+                    content_id::ContentId::WithAssets(folder_name) => Some(folder_name.into()),
+                    _ => None,
+                };
 
                 vec.push(Content {
                     path: path.to_path_buf(),
                     raw: file_contents,
                     meta,
                     slug,
+                    assets,
                 });
             }
         }
@@ -537,8 +546,15 @@ impl Content {
                     ) -> leptos::prelude::AnyView {
                         use leptos::prelude::*;
 
-                        let parent = content.path.parent().unwrap();
-                        let directory = parent.join(attribute);
+                        let assets = if content.assets.is_some() {
+                            // There are some assets, they are located in the parent directory
+                            content.path.parent().unwrap()
+                        } else {
+                            // If there is no assets, then there is no html to render
+                            return view! {}.into_any();
+                        };
+
+                        let directory = assets.join(attribute);
 
                         // Collect list of images
                         let list_images = walkdir::WalkDir::new(&directory)
@@ -557,14 +573,14 @@ impl Content {
                             })
                             // Get relative path to be accept in the html
                             .filter_map(|x| {
-                                x.strip_prefix(parent).map(|path| path.to_path_buf()).ok()
+                                x.strip_prefix(assets).map(|path| path.to_path_buf()).ok()
                             })
                             // For each image, create html view
                         .map(|path| {
                             let filename = path.file_name().and_then(|file| file.to_str()).map(|file| file.to_string()).unwrap();
                             let path = path.to_str().unwrap();
 
-                            leptos::view! {
+                            view! {
                                 <div>
                                     <a href={path.to_string()}>
                                         <img loading="lazy" class=tw_join!("h-auto", "max-w-full", "rounded-lg") src={path.to_string()} alt=filename />
@@ -574,11 +590,12 @@ impl Content {
                         }).collect_view();
 
                         // Final view with images
-                        leptos::prelude::IntoAny::into_any(leptos::view! {
+                        leptos::view! {
                             <div class=tw_join!("grid", "grid-cols-2", "gap-5")>
                                 {list_images}
                             </div>
-                        })
+                        }
+                        .into_any()
                     }
 
                     const CUSTOM_COMPONENTS: &[CustomComponent] = &[CustomComponent {

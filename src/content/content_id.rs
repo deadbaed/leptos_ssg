@@ -53,7 +53,9 @@ pub(super) fn get_slug_from_content_id<S: AsRef<str>>(
 
     // The third part must be the day
     let day = parts.next().ok_or(SlugFromContentIdError::NoDay)?;
-    let day = day.parse::<i8>().map_err(SlugFromContentIdError::ConvertDay)?;
+    let day = day
+        .parse::<i8>()
+        .map_err(SlugFromContentIdError::ConvertDay)?;
     day.eq(&metadata_date_time.day())
         .then_some(())
         .ok_or(SlugFromContentIdError::DayMismatchWithMetadata)?;
@@ -71,19 +73,37 @@ pub enum GetContentIdError {
     InvalidParentDirectory,
 }
 
-pub(super) fn get_content_id(path: &Path) -> Result<&str, GetContentIdError> {
-    match path.file_stem().and_then(|stem| stem.to_str()) {
-        Some(file_stem) => match file_stem {
+pub(super) enum ContentId<'a> {
+    Standalone(&'a str),
+    WithAssets(&'a str),
+}
+
+impl<'a> AsRef<str> for ContentId<'a> {
+    fn as_ref(&self) -> &str {
+        match self {
+            ContentId::Standalone(id) => id,
+            ContentId::WithAssets(id) => id,
+        }
+    }
+}
+
+impl<'a> ContentId<'a> {
+    pub fn from_path(path: &'a Path) -> Result<Self, GetContentIdError> {
+        let file_stem = path
+            .file_stem()
+            .and_then(|stem| stem.to_str())
+            .ok_or(GetContentIdError::InvalidFilename)?;
+
+        match file_stem {
             "index" => {
                 // Use parent folder name as content id
-                Ok(path
-                    .parent()
+                path.parent()
                     .and_then(|parent| parent.file_stem())
                     .and_then(|name| name.to_str())
-                    .ok_or(GetContentIdError::InvalidParentDirectory)?)
+                    .ok_or(GetContentIdError::InvalidParentDirectory)
+                    .map(Self::WithAssets)
             }
-            file_stem => Ok(file_stem),
-        },
-        None => Err(GetContentIdError::InvalidFilename),
+            file_stem => Ok(Self::Standalone(file_stem)),
+        }
     }
 }
