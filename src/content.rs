@@ -265,7 +265,7 @@ impl Content {
                     current_view.push_str(
                         format!(
                             "<a href=\"{dest_url}\" class=\"{}\">",
-                            tw_join!("underline", "text-yellow-400")
+                            tw_join!("underline", "text-yellow-400", "break-all")
                         )
                         .as_ref(),
                     );
