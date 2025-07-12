@@ -1,9 +1,7 @@
 mod config;
 mod content;
 mod html;
-mod metadata;
 mod pages;
-mod post_id;
 
 pub use config::BuildConfig;
 pub use content::{Content, GenerateHtmlError};

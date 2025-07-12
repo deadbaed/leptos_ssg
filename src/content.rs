@@ -1,5 +1,7 @@
-use crate::metadata::*;
-use crate::post_id;
+mod post_id;
+mod metadata;
+
+use metadata::*;
 use pulldown_cmark::Event;
 use pulldown_cmark::Tag;
 use pulldown_cmark::TagEnd;
