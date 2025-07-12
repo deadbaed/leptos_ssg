@@ -144,6 +144,9 @@ impl Content {
         let mut table_cell_idx = 0;
         let mut table_state = TableState::Head;
 
+        // Image helper
+        let mut inside_image = false;
+
         // List of views ready to be used
         let mut views = vec![];
 
@@ -153,7 +156,27 @@ impl Content {
         for event in markdown_events {
             match (event, ignore) {
                 // text
-                (Event::Text(text), false) => current_view.push_str(text.as_ref()),
+                (Event::Text(text), false) => {
+                    if inside_image {
+                        current_view.push_str(
+                            format!(
+                                "<blockquote class=\"{}\">{}</blockquote>",
+                                tw_join!(
+                                    "p-4",
+                                    "mb-4",
+                                    "border-l-8",
+                                    "border-solid",
+                                    "border-gray-500",
+                                    "bg-gray-800"
+                                ),
+                                text.as_ref()
+                            )
+                            .as_ref(),
+                        );
+                    } else {
+                        current_view.push_str(text.as_ref());
+                    }
+                }
 
                 // markdown metadata
                 (Event::Start(Tag::MetadataBlock(_)), _) => ignore = true,
@@ -211,16 +234,23 @@ impl Content {
                     Event::Start(Tag::Image {
                         link_type: _link_type,
                         dest_url,
-                        title,
+                        title: _title,
                         id: _id,
                     }),
                     false,
                 ) => {
+                    inside_image = true;
                     current_view.push_str(
-                        format!("<img loading=\"lazy\" src={dest_url} alt=\"{title}\" class=\"{}\" />", tw_join!("my-4")).as_ref(),
+                        format!(
+                            "<img loading=\"lazy\" src={dest_url} class=\"{}\" />",
+                            tw_join!("my-4")
+                        )
+                        .as_ref(),
                     );
                 }
-                (Event::End(TagEnd::Image), _) => {} // noop
+                (Event::End(TagEnd::Image), _) => {
+                    inside_image = false;
+                }
 
                 // links
                 (
