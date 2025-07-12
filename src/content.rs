@@ -1,15 +1,16 @@
-mod post_id;
 mod metadata;
+mod post_id;
 
 use metadata::*;
 use pulldown_cmark::Event;
 use pulldown_cmark::Tag;
 use pulldown_cmark::TagEnd;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use tailwind_fuse::tw_join;
 
 #[derive(Debug, Clone)]
 pub struct Content {
+    path: PathBuf,
     raw: String,
     meta: MetadataList,
     slug: Slug,
@@ -53,6 +54,7 @@ impl Content {
                     .map_err(ContentListError::PostSlug)?;
 
                 vec.push(Content {
+                    path: path.to_path_buf(),
                     raw: file_contents,
                     meta,
                     slug,
@@ -514,7 +516,108 @@ impl Content {
 
                 // html
                 (Event::Html(html), false) => {
-                    println!("raw html `{html}`");
+                    let html = html.to_owned();
+                    let dom = match tl::parse(html.as_ref(), tl::ParserOptions::default()) {
+                        Ok(dom) => dom,
+                        Err(e) => {
+                            println!("Failed to parse HTML: `{}`: {e}", html.as_ref());
+                            continue;
+                        }
+                    };
+
+                    struct CustomComponent {
+                        tag: &'static str,
+                        attribute: &'static str,
+                        process: fn(&Content, &str) -> leptos::prelude::AnyView,
+                    }
+
+                    fn process_image_grid(
+                        content: &Content,
+                        attribute: &str,
+                    ) -> leptos::prelude::AnyView {
+                        use leptos::prelude::*;
+
+                        let parent = content.path.parent().unwrap();
+                        let directory = parent.join(attribute);
+
+                        // Collect list of images
+                        let list_images = walkdir::WalkDir::new(&directory)
+                            .into_iter()
+                            .filter_map(|e| e.ok())
+                            .map(|dir_entry| dir_entry.into_path())
+                            // Get image files
+                            .filter(|path| {
+                                infer::get_from_path(path)
+                                    .map(|file_type| {
+                                        file_type.map_or(false, |ft| {
+                                            ft.matcher_type() == infer::MatcherType::Image
+                                        })
+                                    })
+                                    .unwrap_or(false)
+                            })
+                            // Get relative path to be accept in the html
+                            .filter_map(|x| {
+                                x.strip_prefix(parent).map(|path| path.to_path_buf()).ok()
+                            })
+                            // For each image, create html view
+                        .map(|path| {
+                            let filename = path.file_name().and_then(|file| file.to_str()).map(|file| file.to_string()).unwrap();
+                            let path = path.to_str().unwrap();
+
+                            leptos::view! {
+                                <div>
+                                    <a href={path.to_string()}>
+                                        <img loading="lazy" class=tw_join!("h-auto", "max-w-full", "rounded-lg") src={path.to_string()} alt=filename />
+                                    </a>
+                                </div>
+                            }
+                        }).collect_view();
+
+                        // Final view with images
+                        leptos::prelude::IntoAny::into_any(leptos::view! {
+                            <div class=tw_join!("grid", "grid-cols-2", "gap-5")>
+                                {list_images}
+                            </div>
+                        })
+                    }
+
+                    const CUSTOM_COMPONENTS: &[CustomComponent] = &[CustomComponent {
+                        tag: "ImageGrid",
+                        attribute: "src",
+                        process: process_image_grid,
+                    }];
+
+                    let mut view = None;
+
+                    for custom_tag_name in CUSTOM_COMPONENTS {
+                        let tag = match dom
+                            .nodes()
+                            .iter()
+                            .find(|node| {
+                                node.as_tag()
+                                    .map_or(false, |tag| tag.name() == custom_tag_name.tag)
+                            })
+                            // Coerce as an html tag
+                            .and_then(|node| node.as_tag())
+                        {
+                            Some(tag) => tag,
+                            None => continue,
+                        };
+
+                        let attribute = match tag.attributes().get(custom_tag_name.attribute) {
+                            Some(Some(attribute)) => attribute,
+                            _ => continue,
+                        };
+
+                        let attribute = attribute.as_utf8_str();
+                        view = Some((custom_tag_name.process)(&self, attribute.as_ref()));
+                    }
+
+                    if let Some(view) = view {
+                        current_view.push_str(leptos::prelude::RenderHtml::to_html(view).as_ref());
+                        views.push(current_view.clone());
+                        current_view.clear();
+                    }
                 }
 
                 // ignored events

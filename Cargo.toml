@@ -12,3 +12,5 @@ leptos = { version = "0.8", features = ["ssr"] }
 tailwind_fuse = { version = "0.3", features = ["variant"] }
 thiserror = "2"
 minify-html = "0.16"
+tl = "0.7"
+infer = "0.19"
