@@ -8,6 +8,7 @@ pub struct BuildConfig<'a> {
     pub(crate) timestamp: Timestamp,
     pub(crate) stylesheet_name: &'a str,
     pub(crate) assets: &'a str,
+    pub(crate) logo: &'a str,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -16,23 +17,31 @@ pub enum BuildConfigError<'a> {
     TrailingSlashRequired(&'a str),
     #[error("Failed to round timestamp to the nearest second")]
     RoundTimestampToSecond(jiff::Error),
+    #[error("Failed to parse provided timestamp: {0}")]
+    ParseTimestamp(jiff::Error),
 }
 
 impl<'a> BuildConfig<'a> {
     pub fn new(
         host: &'a str,
         base_url: &'a str,
-        timestamp: Timestamp,
+        timestamp: i64,
         stylesheet_name: &'a str,
         assets: &'a str,
+        logo: &'a str,
     ) -> Result<Self, BuildConfigError<'a>> {
         if !base_url.ends_with("/") {
             return Err(BuildConfigError::TrailingSlashRequired(base_url));
         }
 
-        let timestamp = timestamp
+        let timestamp = Timestamp::from_second(timestamp)
+            .map_err(BuildConfigError::ParseTimestamp)?
             .round(jiff::Unit::Second)
             .map_err(BuildConfigError::RoundTimestampToSecond)?;
+
+        if !assets.ends_with("/") {
+            return Err(BuildConfigError::TrailingSlashRequired(assets));
+        }
 
         Ok(Self {
             host,
@@ -40,6 +49,7 @@ impl<'a> BuildConfig<'a> {
             timestamp,
             stylesheet_name,
             assets,
+            logo,
         })
     }
 }
