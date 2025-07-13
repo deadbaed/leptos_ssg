@@ -11,7 +11,7 @@ pub fn create_feed(config: &crate::BuildConfig, content: &[crate::content::Conte
 
     let mut feed = FeedBuilder::default();
 
-    feed.id(crate::UUID);
+    feed.id(config.feed_uuid);
     feed.lang(Some(crate::LANG.into()));
     feed.title(config.website_name);
 
@@ -64,7 +64,7 @@ pub fn create_feed(config: &crate::BuildConfig, content: &[crate::content::Conte
             // - UUID of content: a UUID is required for every piece of content
             entry.id(format!(
                 "urn:uuid:{}",
-                uuid::Uuid::new_v5(crate::UUID.as_ref(), content.meta().uuid().as_ref())
+                uuid::Uuid::new_v5(config.feed_uuid.as_ref(), content.meta().uuid().as_ref())
                     .as_hyphenated()
             ));
 

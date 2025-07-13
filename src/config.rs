@@ -1,4 +1,6 @@
 use jiff::Timestamp;
+use std::str::FromStr;
+use uuid::Uuid;
 
 /// Configuration for a build
 #[derive(Debug, Clone, Copy)]
@@ -13,6 +15,7 @@ pub struct BuildConfig<'a> {
     pub(crate) website_tagline: &'a str,
     pub(crate) content_author: &'a str,
     pub(crate) external_url: Option<&'a str>,
+    pub(crate) feed_uuid: Uuid,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -23,6 +26,8 @@ pub enum BuildConfigError<'a> {
     RoundTimestampToSecond(jiff::Error),
     #[error("Failed to parse provided timestamp: {0}")]
     ParseTimestamp(jiff::Error),
+    #[error("Could not parse uuid: {0}")]
+    Uuid(uuid::Error),
 }
 
 impl<'a> BuildConfig<'a> {
@@ -37,6 +42,7 @@ impl<'a> BuildConfig<'a> {
         website_tagline: &'a str,
         content_author: &'a str,
         external_url: Option<&'a str>,
+        feed_uuid: &'a str,
     ) -> Result<Self, BuildConfigError<'a>> {
         if !base_url.ends_with("/") {
             return Err(BuildConfigError::TrailingSlashRequired(base_url));
@@ -51,6 +57,8 @@ impl<'a> BuildConfig<'a> {
             return Err(BuildConfigError::TrailingSlashRequired(assets));
         }
 
+        let feed_uuid = Uuid::from_str(feed_uuid).map_err(BuildConfigError::Uuid)?;
+
         Ok(Self {
             host,
             base_url,
@@ -62,6 +70,7 @@ impl<'a> BuildConfig<'a> {
             website_tagline,
             content_author,
             external_url,
+            feed_uuid,
         })
     }
 }
