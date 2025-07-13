@@ -1,11 +1,13 @@
 use jiff::Zoned;
 use pulldown_cmark::{Event, MetadataBlockKind, Tag, TagEnd};
 use std::str::FromStr;
+use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub enum Metadata {
     Title(String),
     Date(Zoned),
+    Uuid(Uuid),
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -22,16 +24,21 @@ pub enum MetadataParseError {
 pub enum ParseValueError {
     #[error("Could not parse date/time: {0}")]
     DateTime(jiff::Error),
+    #[error("Could not parse uuid: {0}")]
+    Uuid(uuid::Error),
 }
 
 const TAG_TITLE: &str = "title";
 const TAG_DATE: &str = "date";
+const TAG_UUID: &str = "uuid";
 
 impl FromStr for Metadata {
     type Err = MetadataParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (key, value) = s.split_once("=").ok_or(MetadataParseError::NoDelimeter(s.into()))?;
+        let (key, value) = s
+            .split_once("=")
+            .ok_or(MetadataParseError::NoDelimeter(s.into()))?;
 
         let key = key.trim();
         let value = value.trim();
@@ -40,6 +47,7 @@ impl FromStr for Metadata {
             TAG_TITLE => {
                 // Remove surrounding quotes in title
                 let title = value.trim_matches('"');
+
                 Ok(Self::Title(title.into()))
             }
             TAG_DATE => {
@@ -47,6 +55,15 @@ impl FromStr for Metadata {
                     .map_err(ParseValueError::DateTime)
                     .map_err(|e| Self::Err::Value(key.into(), e))?;
                 Ok(Self::Date(date))
+            }
+            TAG_UUID => {
+                // Remove surrounding quotes in uuid
+                let uuid = value.trim_matches('"');
+
+                let uuid = Uuid::from_str(uuid)
+                    .map_err(ParseValueError::Uuid)
+                    .map_err(|e| Self::Err::Value(key.into(), e))?;
+                Ok(Self::Uuid(uuid))
             }
             _ => Err(Self::Err::UnknownTag(key.into())),
         }
@@ -121,5 +138,15 @@ impl MetadataList {
                 _ => None,
             })
             .expect("there should be a `Metadata::Date`")
+    }
+
+    pub fn uuid(&self) -> &Uuid {
+        self.0
+            .iter()
+            .find_map(|el| match el {
+                Metadata::Uuid(uuid) => Some(uuid),
+                _ => None,
+            })
+            .expect("there should be a `Metadata::Uuid`")
     }
 }
