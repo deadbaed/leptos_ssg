@@ -7,6 +7,7 @@ mod pages;
 const TITLE: &str = "deadbaed";
 const SUBTITLE: &str = "broke my bed, now it's dead";
 const LANG: &str = "en";
+const UUID: uuid::Uuid = uuid::uuid!("deadbaed-dead-4444-baed-dddeadbaeddd");
 
 pub use config::BuildConfig;
 pub use content::{Content, GenerateHtmlError};

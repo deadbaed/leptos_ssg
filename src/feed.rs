@@ -10,6 +10,7 @@ fn jiff_to_chrono_date(zoned: &jiff::Zoned) -> chrono::DateTime<chrono::FixedOff
 pub fn create_feed(url: &str, content: &[crate::content::Content]) -> Feed {
     let mut feed = FeedBuilder::default();
 
+    feed.id(crate::UUID);
     feed.lang(Some(crate::LANG.into()));
     feed.title(crate::TITLE);
 
@@ -40,7 +41,6 @@ pub fn create_feed(url: &str, content: &[crate::content::Content]) -> Feed {
     if let Some(content) = most_recent_content {
         feed.updated(jiff_to_chrono_date(content.meta().datetime()));
     }
-    // TODO: generate feed id
 
     let mut author = PersonBuilder::default();
     let author = author
@@ -55,6 +55,16 @@ pub fn create_feed(url: &str, content: &[crate::content::Content]) -> Feed {
             entry.title(content.meta().title());
             entry.published(jiff_to_chrono_date(content.meta().datetime()));
             entry.updated(jiff_to_chrono_date(content.meta().datetime()));
+
+            // UUID is constructed with:
+            // - blog UUID
+            // - UUID of content: a UUID is required for every piece of content
+            entry.id(format!(
+                "urn:uuid:{}",
+                uuid::Uuid::new_v5(crate::UUID.as_ref(), content.meta().uuid().as_ref())
+                    .as_hyphenated()
+                    .to_string()
+            ));
 
             // URL
             let absolute_url = format!("{url}{}/", content.slug());
