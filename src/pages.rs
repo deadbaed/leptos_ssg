@@ -11,6 +11,7 @@ pub fn not_found_page<'a>(config: BuildConfig<'a>) -> AnyView {
 
     crate::html::blog(
         "404 Not Found",
+        config.website_name,
         icon_face_frown(None),
         config,
         crate::html::navigation(view! {
@@ -52,6 +53,7 @@ pub fn content(content: &Content, config: BuildConfig) -> Result<AnyView, Genera
 
     Ok(crate::html::blog(
         content.meta().title(),
+        config.website_name,
         subtitle,
         config,
         crate::html::navigation(view! {
@@ -80,8 +82,9 @@ pub fn index<'a>(content: &[Content], config: BuildConfig<'a>) -> AnyView {
         }).collect_view();
 
     crate::html::home(
-        crate::TITLE,
-        crate::SUBTITLE,
+        config.website_name,
+        config.website_name,
+        config.website_tagline,
         config,
         crate::html::navigation(view! {
                 <li>{underline_link(format!("{}atom.xml", config.base_url), view!{ {icon_rss(Some(tw_join!("text-yellow-400")))}"RSS" }, None)}</li>

@@ -6,24 +6,28 @@ fn jiff_to_chrono_date(zoned: &jiff::Zoned) -> chrono::DateTime<chrono::FixedOff
     chrono::DateTime::parse_from_rfc3339(&rfc3339_date).unwrap()
 }
 
-pub fn create_feed(url: &str, content: &[crate::content::Content]) -> Feed {
+pub fn create_feed(config: &crate::BuildConfig, content: &[crate::content::Content]) -> Feed {
+    let absolute_url = format!("{}{}", config.host, config.base_url);
+
     let mut feed = FeedBuilder::default();
 
     feed.id(crate::UUID);
     feed.lang(Some(crate::LANG.into()));
-    feed.title(crate::TITLE);
+    feed.title(config.website_name);
 
-    let subtitle = Text::plain(crate::SUBTITLE);
+    let subtitle = Text::plain(config.website_tagline);
     feed.subtitle(subtitle);
 
     let mut link_atom = LinkBuilder::default();
     link_atom
-        .href(format!("{url}atom.xml"))
+        .href(format!("{absolute_url}atom.xml"))
         .rel("self")
         .mime_type(Some("application/atom+xml".into()));
 
     let mut link_html = LinkBuilder::default();
-    link_html.href(url).mime_type(Some("text/html".into()));
+    link_html
+        .href(&absolute_url)
+        .mime_type(Some("text/html".into()));
 
     feed.links(vec![link_atom.build(), link_html.build()]);
 
@@ -65,10 +69,10 @@ pub fn create_feed(url: &str, content: &[crate::content::Content]) -> Feed {
             ));
 
             // URL
-            let absolute_url = format!("{url}{}/", content.slug());
+            let absolute_absolute_url = format!("{absolute_url}{}/", content.slug());
             let mut link_html = LinkBuilder::default();
             link_html
-                .href(absolute_url)
+                .href(absolute_absolute_url)
                 .mime_type(Some("text/html".into()));
             entry.link(link_html.build());
 
@@ -76,7 +80,7 @@ pub fn create_feed(url: &str, content: &[crate::content::Content]) -> Feed {
             let mut content_feed = ContentBuilder::default();
             content_feed.lang(Some(crate::LANG.into()));
             content_feed.content_type(Some("html".into()));
-            content_feed.value(content.raw_html(url));
+            content_feed.value(content.raw_html(&absolute_url));
             entry.content(Some(content_feed.build()));
 
             entry.build()

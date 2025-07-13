@@ -4,8 +4,6 @@ mod feed;
 mod html;
 mod pages;
 
-const TITLE: &str = "deadbaed";
-const SUBTITLE: &str = "broke my bed, now it's dead";
 const LANG: &str = "en";
 const UUID: uuid::Uuid = uuid::uuid!("deadbaed-dead-4444-baed-dddeadbaeddd");
 
@@ -157,8 +155,7 @@ impl<'config> Blog<'config> {
     }
 
     pub fn add_atom_feed(&mut self, content: &[Content]) {
-        let absolute_url = format!("{}{}", self.config.host, self.config.base_url);
-        self.atom_feed = Some(feed::create_feed(absolute_url.as_ref(), content));
+        self.atom_feed = Some(feed::create_feed(&self.config, content));
     }
 
     pub fn write_view_to_file(

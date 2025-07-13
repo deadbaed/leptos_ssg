@@ -94,15 +94,16 @@ fn stats() -> impl IntoView {
 }
 
 pub fn shell(
-    title: &str,
+    page_title: &str,
+    website_title: &str,
     config: BuildConfig,
     children: impl IntoAny,
     additional_js: impl IntoAny,
 ) -> AnyView {
-    let title = if title != crate::TITLE {
-        format!("{title} - {}", crate::TITLE)
+    let title = if page_title != website_title {
+        format!("{page_title} - {}", website_title)
     } else {
-        title.into()
+        page_title.into()
     };
 
     let relative_timestamp = r#"
@@ -198,7 +199,8 @@ fn nav_and_content(header: impl IntoAny, children: impl IntoAny) -> AnyView {
 }
 
 pub fn blog(
-    title: &str,
+    page_title: &str,
+    website_title: &str,
     subtitle: impl IntoAny,
     config: BuildConfig,
     header: impl IntoAny,
@@ -206,10 +208,11 @@ pub fn blog(
     additional_js: impl IntoAny,
 ) -> AnyView {
     shell(
-        title,
+        page_title,
+        website_title,
         config,
         container(view! {
-            {title_view(title, subtitle).into_any()}
+            {title_view(page_title, subtitle).into_any()}
             {nav_and_content(header, children).into_any()}
         }),
         additional_js,
@@ -218,7 +221,8 @@ pub fn blog(
 }
 
 pub fn home(
-    title: &str,
+    page_title: &str,
+    website_title: &str,
     subtitle: impl IntoAny,
     config: BuildConfig,
     header: impl IntoAny,
@@ -226,14 +230,15 @@ pub fn home(
     additional_js: impl IntoAny,
 ) -> AnyView {
     shell(
-        title,
+        page_title,
+        website_title,
         config,
         container(view! {
             <div class=tw_join!("md:flex", "md:space-x-4")>
                 <div class=tw_join!("mb-2", "md:mb-0")>
                     <img src=format!("{}{}", config.base_url, config.logo) class=tw_join!("w-42", "h-42", "rounded-2xl", "hover:rounded-full", "hover:motion-safe:animate-spin", "hover:cursor-wait") />
                 </div>
-                {title_view(title, subtitle).into_any()}
+                {title_view(page_title, subtitle).into_any()}
             </div>
             {nav_and_content(header, children).into_any()}
         }),
