@@ -15,7 +15,7 @@ pub fn not_found_page<'a>(config: BuildConfig<'a>) -> AnyView {
         icon_face_frown(None),
         config,
         crate::html::navigation(view! {
-            <li>{underline_link("/",view!{ {icon_home(None)}"Home" }, None)}</li>
+            <li>{underline_link(config.base_url, view!{ {icon_home(None)}"Home" }, None)}</li>
         }),
         view,
         (),

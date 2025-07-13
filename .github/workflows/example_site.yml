@@ -34,7 +34,7 @@ jobs:
       - uses: cachix/install-nix-action@v31
         with:
           nix_path: nixpkgs=channel:nixos-unstable
-      - run: cd example && nix-shell -p tailwindcss_4 --run 'tailwindcss --cwd ../src' > target/example-site/www/style.css
+      - run: cd example && nix-shell -p tailwindcss_4 --run 'tailwindcss --cwd ../src --minify' > target/example-site/www/style.css
 
       # list files to deploy
       - run: tree example/target/example-site
