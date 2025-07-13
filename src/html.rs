@@ -76,7 +76,7 @@ fn footer(timestamp: &Timestamp) -> impl IntoView {
     view! {
         <footer class=tw_join!("bg-black")>
             <div class=tw_join!("container", "mx-auto", "py-8", "px-4", "sm:px-8", "md:px-16", "lg:px-32", "xl:px-64", "2xl:px-96")>
-                <p>{format!("Blog build timestamp: {timestamp} ")}<span data-relative-timestamp={timestamp.as_millisecond()}></span></p>
+                <p>{format!("Page generated on {timestamp} ")}<span data-relative-timestamp={timestamp.as_millisecond()}></span></p>
             </div>
         </footer>
     }
