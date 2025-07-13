@@ -2,9 +2,8 @@ use atom_syndication::*;
 
 fn jiff_to_chrono_date(zoned: &jiff::Zoned) -> chrono::DateTime<chrono::FixedOffset> {
     let rfc3339_date = zoned.strftime("%FT%T%:z").to_string();
-    let chrono_date = chrono::DateTime::parse_from_rfc3339(&rfc3339_date).unwrap();
 
-    chrono_date
+    chrono::DateTime::parse_from_rfc3339(&rfc3339_date).unwrap()
 }
 
 pub fn create_feed(url: &str, content: &[crate::content::Content]) -> Feed {
@@ -63,7 +62,6 @@ pub fn create_feed(url: &str, content: &[crate::content::Content]) -> Feed {
                 "urn:uuid:{}",
                 uuid::Uuid::new_v5(crate::UUID.as_ref(), content.meta().uuid().as_ref())
                     .as_hyphenated()
-                    .to_string()
             ));
 
             // URL

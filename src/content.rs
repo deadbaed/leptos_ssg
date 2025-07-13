@@ -629,7 +629,7 @@ impl Content {
                             content.path.parent().unwrap()
                         } else {
                             // If there is no assets, then there is no html to render
-                            return view! {}.into_any();
+                            return ().into_any();
                         };
 
                         let directory = assets.join(attribute);
@@ -643,7 +643,7 @@ impl Content {
                             .filter(|path| {
                                 infer::get_from_path(path)
                                     .map(|file_type| {
-                                        file_type.map_or(false, |ft| {
+                                        file_type.is_some_and(|ft| {
                                             ft.matcher_type() == infer::MatcherType::Image
                                         })
                                     })
@@ -695,7 +695,7 @@ impl Content {
                             .iter()
                             .find(|node| {
                                 node.as_tag()
-                                    .map_or(false, |tag| tag.name() == custom_tag_name.tag)
+                                    .is_some_and(|tag| tag.name() == custom_tag_name.tag)
                             })
                             // Coerce as an html tag
                             .and_then(|node| node.as_tag())
@@ -710,7 +710,7 @@ impl Content {
                         };
 
                         let attribute = attribute.as_utf8_str();
-                        view = Some((custom_tag_name.process)(&self, attribute.as_ref()));
+                        view = Some((custom_tag_name.process)(self, attribute.as_ref()));
                     }
 
                     if let Some(view) = view {

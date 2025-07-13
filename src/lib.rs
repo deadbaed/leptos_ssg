@@ -116,14 +116,14 @@ impl<'config> Blog<'config> {
 
     fn add_assets(assets: &mut Vec<CopyAsset>, source_base: &Path, target_base: &Path) {
         // Gather list of source assets
-        let source_assets = walkdir::WalkDir::new(&source_base)
+        let source_assets = walkdir::WalkDir::new(source_base)
             .into_iter()
             .filter_map(|e| e.ok())
             .map(|dir_entry| dir_entry.into_path())
             .filter(|path| {
                 infer::get_from_path(path)
                     .map(|file_type| {
-                        file_type.map_or(false, |ft| {
+                        file_type.is_some_and(|ft| {
                             use infer::MatcherType;
                             ft.matcher_type() == MatcherType::Image
                                 || ft.matcher_type() == MatcherType::Audio
@@ -137,7 +137,7 @@ impl<'config> Blog<'config> {
         let source_and_target_assets = source_assets.filter_map(|source| {
             // Remove source prefix
             source
-                .strip_prefix(&source_base)
+                .strip_prefix(source_base)
                 .map(|path| path.to_path_buf())
                 // Add target prefix instead
                 .map(|path| target_base.join(path))
@@ -195,7 +195,7 @@ impl<'config> Blog<'config> {
             minify_html::minify(html.as_ref(), &cfg)
         };
 
-        let html_document = base_path.join(&path);
+        let html_document = base_path.join(path);
         std::fs::write(&html_document, html_bytes)
             .map_err(|e| BlogWriteFilesError::WriteFile(html_document.clone(), e.kind()))?;
         println!("wrote `{}` to {}", path.display(), html_document.display());
@@ -219,10 +219,7 @@ impl<'config> Blog<'config> {
         Ok(())
     }
 
-    fn write_atom_feed(
-        atom_feed: Feed,
-        target: &Path,
-    ) -> Result<PathBuf, BlogWriteFilesError> {
+    fn write_atom_feed(atom_feed: Feed, target: &Path) -> Result<PathBuf, BlogWriteFilesError> {
         let path = target.join("atom.xml");
         std::fs::write(&path, atom_feed.to_string())
             .map_err(|e| BlogWriteFilesError::WriteFile(path.clone(), e.kind()))?;

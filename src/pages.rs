@@ -41,14 +41,14 @@ pub fn content(content: &Content, config: BuildConfig) -> Result<AnyView, Genera
         view! {
             <li>{underline_link(format!("{}{slug}", config.base_url),view!{ {icon_arrow_uturn_left(None)}"Previous" }, None)}</li>
         }.into_any()
-    }).unwrap_or(view! {}.into_any());
+    }).unwrap_or(().into_any());
 
     // Calling `content.previous()` because the list is sorted in descending order
     let next_navigation = content.previous().map(|slug| {
         view! {
             <li>{underline_link(format!("{}{slug}", config.base_url),view!{ {icon_arrow_uturn_right(None)}"Next" }, None)}</li>
         }.into_any()
-    }).unwrap_or(view! {}.into_any());
+    }).unwrap_or(().into_any());
 
     Ok(crate::html::blog(
         content.meta().title(),
