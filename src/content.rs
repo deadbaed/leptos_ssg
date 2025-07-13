@@ -597,6 +597,13 @@ impl Content {
                     current_view.clear();
                 }
 
+                // rule
+                (Event::Rule, false) => {
+                    current_view.push_str("<hr />");
+                    views.push(current_view.clone());
+                    current_view.clear();
+                }
+
                 // html blocks
                 (Event::Start(Tag::HtmlBlock), false) => {} // noop
                 (Event::End(TagEnd::HtmlBlock), false) => {} // noop
@@ -639,8 +646,10 @@ impl Content {
                             .into_iter()
                             .filter_map(|e| e.ok())
                             .map(|dir_entry| dir_entry.into_path())
+                            .filter(|path| path.is_file())
                             // Get image files
                             .filter(|path| {
+                                // TODO: allow svg files as well
                                 infer::get_from_path(path)
                                     .map(|file_type| {
                                         file_type.is_some_and(|ft| {

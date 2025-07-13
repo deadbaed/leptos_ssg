@@ -120,18 +120,7 @@ impl<'config> Blog<'config> {
             .into_iter()
             .filter_map(|e| e.ok())
             .map(|dir_entry| dir_entry.into_path())
-            .filter(|path| {
-                infer::get_from_path(path)
-                    .map(|file_type| {
-                        file_type.is_some_and(|ft| {
-                            use infer::MatcherType;
-                            ft.matcher_type() == MatcherType::Image
-                                || ft.matcher_type() == MatcherType::Audio
-                                || ft.matcher_type() == MatcherType::Video
-                        })
-                    })
-                    .unwrap_or(false)
-            });
+            .filter(|path| path.is_file());
 
         // For each source asset, get its target path
         let source_and_target_assets = source_assets.filter_map(|source| {
@@ -148,6 +137,7 @@ impl<'config> Blog<'config> {
 
         // Add to the list of assets
         source_and_target_assets.for_each(|(source, target)| {
+            println!("Processed asset `{}`", source.display());
             assets.push(CopyAsset { source, target });
         });
     }
