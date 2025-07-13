@@ -9,11 +9,21 @@ fn main() {
         .try_into()
         .expect("timestamp in i64");
 
+    #[cfg(debug_assertions)]
+    let host = "http://localhost:4343";
+    #[cfg(debug_assertions)]
+    let base_url = "/example-site/";
+
+    #[cfg(not(debug_assertions))]
+    let host = "https://deadbaed.github.io";
+    #[cfg(not(debug_assertions))]
+    let base_url = "/leptos_ssg/";
+
     let assets = "./assets/".into();
     let target = "./target/example-site".into();
     let config = leptos_ssg::BuildConfig::new(
-        "http://localhost:4343",
-        "/example-site/",
+        host,
+        base_url,
         timestamp,
         "style.css",
         assets,

@@ -52,6 +52,7 @@ const WWW_FOLDER: &str = "www/";
 
 impl<'config> Blog<'config> {
     pub fn new(target: PathBuf, config: config::BuildConfig<'config>) -> Self {
+        println!("Building the following configuration: {config:#?}");
         Self {
             target,
             config,
@@ -190,6 +191,12 @@ impl<'config> Blog<'config> {
     }
 
     pub fn copy_asset(source: &Path, target: &Path) -> Result<(), BlogWriteFilesError> {
+        println!(
+            "Copying asset from `{}` to `{}`",
+            source.display(),
+            target.display()
+        );
+
         // Create parent directory if it does note exist
         let parent = target
             .parent()
@@ -200,13 +207,11 @@ impl<'config> Blog<'config> {
         std::fs::copy(source, target)
             .map_err(|e| BlogWriteFilesError::WriteFile(target.to_path_buf(), e.kind()))?;
 
-        println!("copied `{}` to `{}`", source.display(), target.display());
-
         Ok(())
     }
 
     fn write_atom_feed(atom_feed: Feed, target: &Path) -> Result<PathBuf, BlogWriteFilesError> {
-        let path = target.join("atom.xml");
+        let path = target.join(format!("{WWW_FOLDER}atom.xml"));
         std::fs::write(&path, atom_feed.to_string())
             .map_err(|e| BlogWriteFilesError::WriteFile(path.clone(), e.kind()))?;
 
@@ -215,22 +220,24 @@ impl<'config> Blog<'config> {
 
     /// Consume struct, write to files
     pub fn build(mut self) -> Result<PathBuf, BlogWriteFilesError> {
-        // Add internal assets
-        let assets_path = PathBuf::from(self.config.assets);
-        Self::add_assets(
-            &mut self.assets,
-            assets_path.as_path(),
-            self.target.as_path(),
-        );
-
+        // Create HTML files of content
         for (path, view) in self.pages {
             Self::write_view_to_file(view, self.target.as_path(), &path)?;
         }
 
+        // Add internal assets
+        Self::add_assets(
+            &mut self.assets,
+            PathBuf::from(self.config.assets).as_path(),
+            self.target.join(WWW_FOLDER).as_path(),
+        );
+
+        // Copy content assets + internal assets
         for copy_asset in self.assets {
             Self::copy_asset(&copy_asset.source, &copy_asset.target)?;
         }
 
+        // Atom feed
         if let Some(atom_feed) = self.atom_feed {
             Self::write_atom_feed(atom_feed, &self.target)?;
         }
