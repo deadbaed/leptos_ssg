@@ -15,6 +15,10 @@ pub struct Content {
     meta: MetadataList,
     slug: Slug,
     assets: Option<PathBuf>,
+
+    // Navigation
+    previous: Option<Slug>,
+    next: Option<Slug>,
 }
 
 pub type Slug = String;
@@ -67,14 +71,29 @@ impl Content {
                     meta,
                     slug,
                     assets,
+                    previous: None,
+                    next: None,
                 });
             }
         }
 
         // Sort by descending order
-        Ok(Self::sort_desc(vec))
+        vec = Self::sort_desc(vec);
 
-        // TODO: add previous/next navigation, add icons
+        // Add previous/next navigation
+        {
+            let mut previous = None;
+            let mut iter = vec.iter_mut().peekable();
+
+            while let Some(el) = iter.next() {
+                el.previous = previous;
+                previous = Some(el.slug());
+
+                el.next = iter.peek().map(|el| el.slug());
+            }
+        }
+
+        Ok(vec)
     }
 
     /// Sort by descending order, the first item is the newest one
@@ -94,6 +113,14 @@ impl Content {
 
     pub fn assets(&self) -> Option<&Path> {
         self.assets.as_deref()
+    }
+
+    pub fn previous(&self) -> Option<&str> {
+        self.previous.as_deref()
+    }
+
+    pub fn next(&self) -> Option<&str> {
+        self.next.as_deref()
     }
 
     fn markdown_events<'input>(input: &'input str) -> Vec<Event<'input>> {
