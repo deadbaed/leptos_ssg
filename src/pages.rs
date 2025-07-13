@@ -39,14 +39,14 @@ pub fn content(content: &Content, config: BuildConfig) -> Result<AnyView, Genera
     // Calling `content.next()` because the list is sorted in descending order
     let previous_navigation = content.next().map(|slug| {
         view! {
-            <li>{underline_link(format!("/{slug}"),view!{ {icon_arrow_uturn_left(None)}"Previous" }, None)}</li>
+            <li>{underline_link(format!("{}{slug}", config.base_url),view!{ {icon_arrow_uturn_left(None)}"Previous" }, None)}</li>
         }.into_any()
     }).unwrap_or(view! {}.into_any());
 
     // Calling `content.previous()` because the list is sorted in descending order
     let next_navigation = content.previous().map(|slug| {
         view! {
-            <li>{underline_link(format!("/{slug}"),view!{ {icon_arrow_uturn_right(None)}"Next" }, None)}</li>
+            <li>{underline_link(format!("{}{slug}", config.base_url),view!{ {icon_arrow_uturn_right(None)}"Next" }, None)}</li>
         }.into_any()
     }).unwrap_or(view! {}.into_any());
 
@@ -55,7 +55,7 @@ pub fn content(content: &Content, config: BuildConfig) -> Result<AnyView, Genera
         subtitle,
         config,
         crate::html::navigation(view! {
-            <li>{underline_link("/",view!{ {icon_home(None)}"Home" }, None)}</li>
+            <li>{underline_link(config.base_url, view!{ {icon_home(None)}"Home" }, None)}</li>
             {previous_navigation}
             {next_navigation}
         }),
