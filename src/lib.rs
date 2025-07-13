@@ -105,6 +105,44 @@ impl<'config> Blog<'config> {
         Ok(())
     }
 
+    fn add_assets(assets: &mut Vec<CopyAsset>, source_base: &Path, target_base: &Path) {
+        // Gather list of source assets
+        let source_assets = walkdir::WalkDir::new(&source_base)
+            .into_iter()
+            .filter_map(|e| e.ok())
+            .map(|dir_entry| dir_entry.into_path())
+            .filter(|path| {
+                infer::get_from_path(path)
+                    .map(|file_type| {
+                        file_type.map_or(false, |ft| {
+                            use infer::MatcherType;
+                            ft.matcher_type() == MatcherType::Image
+                                || ft.matcher_type() == MatcherType::Audio
+                                || ft.matcher_type() == MatcherType::Video
+                        })
+                    })
+                    .unwrap_or(false)
+            });
+
+        // For each source asset, get its target path
+        let source_and_target_assets = source_assets.filter_map(|source| {
+            // Remove source prefix
+            source
+                .strip_prefix(&source_base)
+                .map(|path| path.to_path_buf())
+                // Add target prefix instead
+                .map(|path| target_base.join(path))
+                .ok()
+                // Keep both source and target paths
+                .map(|target| (source, target))
+        });
+
+        // Add to the list of assets
+        source_and_target_assets.for_each(|(source, target)| {
+            assets.push(CopyAsset { source, target });
+        });
+    }
+
     pub fn add_content_assets(&mut self, content_path: &Path, content: &[Content]) {
         content
             .iter()
@@ -115,41 +153,7 @@ impl<'config> Blog<'config> {
                 let source_base = content_path.join(assets);
                 let target_base = self.target.join(slug);
 
-                // Gather list of source assets
-                let source_assets = walkdir::WalkDir::new(&source_base)
-                    .into_iter()
-                    .filter_map(|e| e.ok())
-                    .map(|dir_entry| dir_entry.into_path())
-                    .filter(|path| {
-                        infer::get_from_path(path)
-                            .map(|file_type| {
-                                file_type.map_or(false, |ft| {
-                                    use infer::MatcherType;
-                                    ft.matcher_type() == MatcherType::Image
-                                        || ft.matcher_type() == MatcherType::Audio
-                                        || ft.matcher_type() == MatcherType::Video
-                                })
-                            })
-                            .unwrap_or(false)
-                    });
-
-                // For each source asset, get its target path
-                let source_and_target_assets = source_assets.filter_map(|source| {
-                    // Remove source prefix
-                    source
-                        .strip_prefix(&source_base)
-                        .map(|path| path.to_path_buf())
-                        // Add target prefix instead
-                        .map(|path| target_base.join(path))
-                        .ok()
-                        // Keep both source and target paths
-                        .map(|target| (source, target))
-                });
-
-                // Add to the list of assets
-                source_and_target_assets.for_each(|(source, target)| {
-                    self.assets.push(CopyAsset { source, target });
-                });
+                Self::add_assets(&mut self.assets, &source_base, &target_base);
             });
     }
 
@@ -202,11 +206,17 @@ impl<'config> Blog<'config> {
     }
 
     /// Consume struct, write to files
-    pub fn build(self) -> Result<PathBuf, BlogWriteFilesError> {
-        let target = self.target.as_path();
+    pub fn build(mut self) -> Result<PathBuf, BlogWriteFilesError> {
+        // Add internal assets
+        let assets_path = PathBuf::from(self.config.assets);
+        Self::add_assets(
+            &mut self.assets,
+            assets_path.as_path(),
+            self.target.as_path(),
+        );
 
         for (path, view) in self.pages {
-            Self::write_view_to_file(view, target, &path)?;
+            Self::write_view_to_file(view, self.target.as_path(), &path)?;
         }
 
         for copy_asset in self.assets {

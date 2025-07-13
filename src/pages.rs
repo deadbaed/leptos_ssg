@@ -63,7 +63,7 @@ pub fn index<'a>(content: &[Content], config: BuildConfig<'a>) -> AnyView {
             }
         }).collect_view();
 
-    crate::html::blog(
+    crate::html::home(
         "deadbaed",
         "broke my bed, now it's dead",
         config,

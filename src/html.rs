@@ -177,6 +177,27 @@ fn container(children: impl IntoAny) -> impl IntoAny {
     }
 }
 
+fn title_view(title: &str, subtitle: impl IntoAny) -> AnyView {
+    view! {
+        <div>
+            <h1 class=tw_join!("text-4xl", "font-bold")>{title.to_string()}</h1>
+            <div class=tw_join!("text-xl", "font-medium")>{subtitle.into_any()}</div>
+        </div>
+    }
+    .into_any()
+}
+
+fn nav_and_content(header: impl IntoAny, children: impl IntoAny) -> AnyView {
+    view! {
+        <div class=tw_join!("mt-8")>
+            {header.into_any()}
+            <hr />
+        </div>
+        <div class=tw_join!("my-4")>{children.into_any()}</div>
+    }
+    .into_any()
+}
+
 pub fn blog(
     title: &str,
     subtitle: impl IntoAny,
@@ -189,13 +210,33 @@ pub fn blog(
         title,
         config,
         container(view! {
-            <h1 class=tw_join!("text-4xl", "font-bold")>{title.to_string()}</h1>
-            <div class=tw_join!("text-xl", "font-medium")>{subtitle.into_any()}</div>
-            <div class=tw_join!("mt-8")>
-                {header.into_any()}
-                <hr />
+            {title_view(title, subtitle).into_any()}
+            {nav_and_content(header, children).into_any()}
+        }),
+        additional_js,
+    )
+    .into_any()
+}
+
+pub fn home(
+    title: &str,
+    subtitle: impl IntoAny,
+    config: BuildConfig,
+    header: impl IntoAny,
+    children: impl IntoAny,
+    additional_js: impl IntoAny,
+) -> AnyView {
+    shell(
+        title,
+        config,
+        container(view! {
+            <div class=tw_join!("md:flex", "md:space-x-4")>
+                <div class=tw_join!("mb-2", "md:mb-0")>
+                    <img src=format!("{}philt3r.png", config.base_url) class=tw_join!("w-42", "h-42", "rounded-2xl", "hover:rounded-full", "hover:motion-safe:animate-spin", "hover:cursor-wait") />
+                </div>
+                {title_view(title, subtitle).into_any()}
             </div>
-            <div class=tw_join!("my-4")>{children.into_any()}</div>
+            {nav_and_content(header, children).into_any()}
         }),
         additional_js,
     )
