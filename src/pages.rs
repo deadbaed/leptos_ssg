@@ -80,8 +80,8 @@ pub fn index<'a>(content: &[Content], config: BuildConfig<'a>) -> AnyView {
         }).collect_view();
 
     crate::html::home(
-        "deadbaed",
-        "broke my bed, now it's dead",
+        crate::TITLE,
+        crate::SUBTITLE,
         config,
         crate::html::navigation(view! {
                 <li>{underline_link(format!("{}atom.xml", config.base_url), view!{ {icon_rss(Some(tw_join!("text-yellow-400")))}"RSS" }, None)}</li>

@@ -134,6 +134,23 @@ impl Content {
         iterator.collect()
     }
 
+    pub fn raw_html(&self, aboslute_url: &str) -> String {
+        // Add instructions to read article on the website if formatting looks weird in feed reader
+        let feed_bad_formatting_disclaimer = format!(
+            "\n\n[If the formatting of this post looks odd in your feed reader, [visit the original article]({aboslute_url}{}/)]\n",
+            self.slug()
+        );
+        let mut content_with_disclaimer = self.raw.clone();
+        content_with_disclaimer.push_str(feed_bad_formatting_disclaimer.as_ref());
+
+        // Parse markdown and write html
+        let markdown_events = Self::markdown_events(content_with_disclaimer.as_ref());
+        let mut html_output = String::new();
+        pulldown_cmark::html::push_html(&mut html_output, markdown_events.into_iter());
+
+        html_output
+    }
+
     /// Collect languages found in code blocks in markdown content
     pub fn code_block_languages(&self) -> impl Iterator<Item = impl AsRef<str>> {
         Self::markdown_events(&self.raw)

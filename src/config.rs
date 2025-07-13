@@ -3,6 +3,7 @@ use jiff::Timestamp;
 /// Configuration for a build
 #[derive(Debug, Clone, Copy)]
 pub struct BuildConfig<'a> {
+    pub(crate) host: &'a str,
     pub(crate) base_url: &'a str,
     pub(crate) timestamp: Timestamp,
     pub(crate) stylesheet_name: &'a str,
@@ -19,6 +20,7 @@ pub enum BuildConfigError<'a> {
 
 impl<'a> BuildConfig<'a> {
     pub fn new(
+        host: &'a str,
         base_url: &'a str,
         timestamp: Timestamp,
         stylesheet_name: &'a str,
@@ -33,6 +35,7 @@ impl<'a> BuildConfig<'a> {
             .map_err(BuildConfigError::RoundTimestampToSecond)?;
 
         Ok(Self {
+            host,
             base_url,
             timestamp,
             stylesheet_name,

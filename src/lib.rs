@@ -1,11 +1,17 @@
 mod config;
 mod content;
+mod feed;
 mod html;
 mod pages;
+
+const TITLE: &str = "deadbaed";
+const SUBTITLE: &str = "broke my bed, now it's dead";
+const LANG: &str = "en";
 
 pub use config::BuildConfig;
 pub use content::{Content, GenerateHtmlError};
 
+use atom_syndication::Feed;
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, thiserror::Error)]
@@ -31,6 +37,7 @@ pub struct Blog<'config> {
     config: BuildConfig<'config>,
     pages: Vec<(PathBuf, leptos::prelude::AnyView)>,
     assets: Vec<CopyAsset>,
+    atom_feed: Option<Feed>,
 }
 
 #[cfg(debug_assertions)]
@@ -52,6 +59,7 @@ impl<'config> Blog<'config> {
             config,
             pages: vec![],
             assets: vec![],
+            atom_feed: None,
         }
     }
 
@@ -157,6 +165,11 @@ impl<'config> Blog<'config> {
             });
     }
 
+    pub fn add_atom_feed(&mut self, content: &[Content]) {
+        let absolute_url = format!("{}{}", self.config.host, self.config.base_url);
+        self.atom_feed = Some(feed::create_feed(absolute_url.as_ref(), content));
+    }
+
     pub fn write_view_to_file(
         view: leptos::prelude::AnyView,
         base_path: &Path,
@@ -205,6 +218,17 @@ impl<'config> Blog<'config> {
         Ok(())
     }
 
+    fn write_atom_feed(
+        atom_feed: Feed,
+        target: &Path,
+    ) -> Result<PathBuf, BlogWriteFilesError> {
+        let path = target.join("atom.xml");
+        std::fs::write(&path, atom_feed.to_string())
+            .map_err(|e| BlogWriteFilesError::WriteFile(path.clone(), e.kind()))?;
+
+        Ok(path)
+    }
+
     /// Consume struct, write to files
     pub fn build(mut self) -> Result<PathBuf, BlogWriteFilesError> {
         // Add internal assets
@@ -221,6 +245,10 @@ impl<'config> Blog<'config> {
 
         for copy_asset in self.assets {
             Self::copy_asset(&copy_asset.source, &copy_asset.target)?;
+        }
+
+        if let Some(atom_feed) = self.atom_feed {
+            Self::write_atom_feed(atom_feed, &self.target)?;
         }
 
         Ok(self.target)

@@ -99,9 +99,8 @@ pub fn shell(
     children: impl IntoAny,
     additional_js: impl IntoAny,
 ) -> AnyView {
-    const SUFFIX: &str = "deadbaed";
-    let title = if title != SUFFIX {
-        format!("{title} - {SUFFIX}")
+    let title = if title != crate::TITLE {
+        format!("{title} - {}", crate::TITLE)
     } else {
         title.into()
     };
@@ -147,7 +146,7 @@ elements.forEach(element => {
 
     view! {
         <!DOCTYPE html>
-        <html lang="en">
+        <html lang=crate::LANG>
             <head>
                 <meta charset="utf-8" />
                 <meta name="viewport" content="width=device-width" />
