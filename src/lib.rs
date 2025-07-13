@@ -140,14 +140,14 @@ impl<'config> Blog<'config> {
         });
     }
 
-    pub fn add_content_assets(&mut self, content_path: &Path, content: &[Content]) {
+    pub fn add_content_assets(&mut self, content_path: impl AsRef<Path>, content: &[Content]) {
         content
             .iter()
             // The names are not the same between content and final folder (since it is public)
             .flat_map(|content| content.assets().map(|assets| (assets, content.slug())))
             .for_each(|(assets, slug)| {
                 // Base paths for source and target locations
-                let source_base = content_path.join(assets);
+                let source_base = content_path.as_ref().join(assets);
                 let target_base = self.target.join(slug);
 
                 Self::add_assets(&mut self.assets, &source_base, &target_base);

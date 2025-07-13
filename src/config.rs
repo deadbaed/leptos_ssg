@@ -11,6 +11,8 @@ pub struct BuildConfig<'a> {
     pub(crate) logo: &'a str,
     pub(crate) website_name: &'a str,
     pub(crate) website_tagline: &'a str,
+    pub(crate) content_author: &'a str,
+    pub(crate) external_url: Option<&'a str>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -33,6 +35,8 @@ impl<'a> BuildConfig<'a> {
         logo: &'a str,
         website_name: &'a str,
         website_tagline: &'a str,
+        content_author: &'a str,
+        external_url: Option<&'a str>,
     ) -> Result<Self, BuildConfigError<'a>> {
         if !base_url.ends_with("/") {
             return Err(BuildConfigError::TrailingSlashRequired(base_url));
@@ -56,6 +60,8 @@ impl<'a> BuildConfig<'a> {
             logo,
             website_name,
             website_tagline,
+            content_author,
+            external_url,
         })
     }
 }

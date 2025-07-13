@@ -81,6 +81,12 @@ pub fn index<'a>(content: &[Content], config: BuildConfig<'a>) -> AnyView {
             }
         }).collect_view();
 
+    let external_website = config.external_url.map(|url| {
+        view! {
+            <li>{underline_link(url, view!{ {icon_website(Some(tw_join!("text-yellow-400")))}"Website" }, None)}</li>
+        }.into_any()
+    }).unwrap_or(().into_any());
+
     crate::html::home(
         config.website_name,
         config.website_name,
@@ -88,7 +94,7 @@ pub fn index<'a>(content: &[Content], config: BuildConfig<'a>) -> AnyView {
         config,
         crate::html::navigation(view! {
                 <li>{underline_link(format!("{}atom.xml", config.base_url), view!{ {icon_rss(Some(tw_join!("text-yellow-400")))}"RSS" }, None)}</li>
-                <li>{underline_link("https://philippeloctaux.com", view!{ {icon_website(Some(tw_join!("text-yellow-400")))}"Website" }, None)}</li>
+                {external_website}
         }),
         view! {
             <ul class=tw_join!("space-y-6")>

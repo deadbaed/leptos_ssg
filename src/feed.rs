@@ -47,8 +47,8 @@ pub fn create_feed(config: &crate::BuildConfig, content: &[crate::content::Conte
 
     let mut author = PersonBuilder::default();
     let author = author
-        .name("Philippe Loctaux")
-        .uri(Some("https://philippeloctaux.com".into()))
+        .name(config.content_author)
+        .uri(config.external_url.map(ToString::to_string))
         .build();
 
     let entries = content_iter
