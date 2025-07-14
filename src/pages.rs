@@ -8,7 +8,7 @@ pub fn not_found_page<'a>(
 ) -> AnyView {
     let view = leptos::view! {
         <div>"This page could not be found."</div>
-        <div>"Perhaps the page you are looking for was moved, "{underline_link(config.base_url, "go to the archive", None)}" to find it!"</div>
+        <div>"Perhaps the page you are looking for was moved, "{underline_link(config.base_url, "go to the homepage", None)}" to find it!"</div>
     }
     .into_view();
 
