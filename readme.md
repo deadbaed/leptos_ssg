@@ -51,3 +51,4 @@ Inside Leptos, every tailwind class was fed to [tailwind_fuse](https://crates.io
 - Light/dark mode
 - Respect gitignore when processing assets
 - Add [tracing](https://crates.io/crates/tracing) for better logs
+- Be [HTML compliant](https://validator.w3.org/nu/?doc=https%3A%2F%2Fdeadbaed.github.io%2Fleptos_ssg%2F)

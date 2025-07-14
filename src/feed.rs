@@ -1,7 +1,7 @@
 use atom_syndication::*;
 
 fn jiff_to_chrono_date(zoned: &jiff::Zoned) -> chrono::DateTime<chrono::FixedOffset> {
-    let rfc3339_date = zoned.strftime("%FT%T%:z").to_string();
+    let rfc3339_date = zoned.strftime(crate::RFC_3339_FORMAT).to_string();
 
     chrono::DateTime::parse_from_rfc3339(&rfc3339_date).unwrap()
 }

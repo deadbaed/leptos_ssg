@@ -5,6 +5,7 @@ mod html;
 mod pages;
 
 const LANG: &str = "en";
+const RFC_3339_FORMAT: &str = "%FT%T%:z";
 
 pub use config::BuildConfig;
 pub use content::{Content, GenerateHtmlError};

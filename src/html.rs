@@ -224,7 +224,7 @@ pub fn home(
         container(view! {
             <div class=tw_join!("md:flex", "md:space-x-4")>
                 <div class=tw_join!("mb-2", "md:mb-0")>
-                    <img src=format!("{}{}", config.base_url, config.logo) class=tw_join!("w-42", "h-42", "rounded-2xl", "hover:rounded-full", "hover:motion-safe:animate-spin", "hover:cursor-wait") />
+                    <img alt=format!("{} logo", config.website_name) src=format!("{}{}", config.base_url, config.logo) class=tw_join!("w-42", "h-42", "rounded-2xl", "hover:rounded-full", "hover:motion-safe:animate-spin", "hover:cursor-wait") />
                 </div>
                 {title_view(page_title, subtitle).into_any()}
             </div>

@@ -93,7 +93,7 @@ pub fn index<'a>(
                 <li class=tw_join!("flex", "flex-col", "lg:flex-wrap", "items-start")>
                     <a class=tw_join!("font-medium", "text-lg") href={format!("{}{}", config.base_url, content.slug())} >{content.meta().title()}</a>
                     " "
-                    <time datetime=content.meta().datetime().to_string() class=tw_join!("flex-none", "text-gray-400", "text-lg")>{content.meta().datetime().strftime("%F").to_string()}</time>
+                    <time datetime=content.meta().datetime().strftime(crate::RFC_3339_FORMAT).to_string() class=tw_join!("flex-none", "text-gray-400", "text-lg")>{content.meta().datetime().strftime("%F").to_string()}</time>
                 </li>
             }
         }).collect_view();
