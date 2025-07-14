@@ -670,7 +670,7 @@ impl Content {
                         // Sort by name
                         list_images.sort();
 
-                        println!("ImageGrid: Files retained: {:#?}", list_images);
+                        println!("ImageGrid: Files retained: {list_images:#?}");
 
                         // For each image, create html view
                         let list_images = list_images.into_iter().map(|path| {

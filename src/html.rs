@@ -90,7 +90,7 @@ pub fn shell(
     additional_js: impl IntoAny,
 ) -> AnyView {
     let title = if page_title != website_title {
-        format!("{page_title} - {}", website_title)
+        format!("{page_title} - {website_title}")
     } else {
         page_title.into()
     };
