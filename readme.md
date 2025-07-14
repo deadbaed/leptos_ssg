@@ -52,3 +52,8 @@ Inside Leptos, every tailwind class was fed to [tailwind_fuse](https://crates.io
 - Respect gitignore when processing assets
 - Add [tracing](https://crates.io/crates/tracing) for better logs
 - Be [HTML compliant](https://validator.w3.org/nu/?doc=https%3A%2F%2Fdeadbaed.github.io%2Fleptos_ssg%2F)
+
+## License
+
+- Code is licensed under the MIT license
+- Image assets located in the ./example directory are copyrighted by their respective authors.
