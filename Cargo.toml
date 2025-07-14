@@ -1,3 +1,6 @@
+[workspace]
+members = [".", "example"]
+
 [package]
 name = "leptos_ssg"
 version = "0.1.0"

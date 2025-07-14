@@ -47,3 +47,6 @@ Inside Leptos, every tailwind class was fed to [tailwind_fuse](https://crates.io
 - Generate `sitemap.xml` for search indexers with [sitemap-rs](https://crates.io/crates/sitemap-rs)
 - Tiny search engine to find content faster, instead of relying on an external tool
 - Tests
+- More customizability
+- Light/dark mode
+- Respect gitignore when processing assets
