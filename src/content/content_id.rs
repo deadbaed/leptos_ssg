@@ -87,6 +87,12 @@ impl<'a> AsRef<str> for ContentId<'a> {
     }
 }
 
+impl<'a> std::fmt::Display for ContentId<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_ref())
+    }
+}
+
 impl<'a> ContentId<'a> {
     pub fn from_path(path: &'a Path) -> Result<Self, GetContentIdError> {
         let file_stem = path

@@ -36,6 +36,7 @@ impl FromStr for Metadata {
     type Err = MetadataParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        println!("Metadata: Parsing `{s}`");
         let (key, value) = s
             .split_once("=")
             .ok_or(MetadataParseError::NoDelimeter(s.into()))?;

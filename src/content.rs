@@ -44,7 +44,9 @@ impl Content {
             .filter_map(|e| e.ok())
         {
             let path = entry.path();
-            if path.is_file() && path.extension().is_some_and(|ext| ext != "md") {
+            if path.is_file() && path.extension().is_some_and(|ext| ext == "md") {
+                println!("Processing file {}", path.display());
+
                 let file_contents = std::fs::read_to_string(path)
                     .map_err(|e| ContentListError::ReadFile(e.kind()))?;
 
@@ -52,10 +54,12 @@ impl Content {
                 let events = Self::markdown_events(&file_contents);
                 let meta = MetadataList::from_markdown(&events)
                     .map_err(ContentListError::ParseMetadata)?;
+                println!("Got markdown metadata: {meta:#?}");
 
                 // Get slug out of filename
                 let content_id =
                     content_id::ContentId::from_path(path).map_err(ContentListError::ContentId)?;
+                println!("ContentId: `{content_id}`");
                 let slug = content_id::get_slug_from_content_id(&content_id, meta.datetime())
                     .map_err(ContentListError::ContentSlug)?;
 
