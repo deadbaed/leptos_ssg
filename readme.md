@@ -33,13 +33,43 @@ It is used as-is for generating the Atom feed, but for the html render markdown 
 
 There is no webassembly here, I am simply using Leptos to output HTML.
 
-I wanted to use it to render HTML from markdown, but I could not because of the markdown parser, so I had to craft HTML by hand. Otherwise, every time HTML needed to be created it was done through Leptos.
-
 ### TailwindCSS
 
 I never liked writting CSS, but [TailwindCSS](http://tailwindcss.com) made me appreciate writting CSS.
 
 Inside Leptos, every tailwind class was fed to [tailwind_fuse](https://crates.io/crates/tailwind_fuse) to join or handle conflicts.
+
+## Quirks
+
+### Leptos to generate HTML from markdown
+
+I initially wanted to use Leptos to render markdown events as HTML components. Unfortunately, the Leptos macro requires a complete HTML tag to work:
+```rust
+let my_view = leptos::prelude::view! {
+    <p> // The macro will not accept this
+    <p></p> // This is okay
+};
+```
+
+The markdown parser emits markdown events, a lot of them are broken down into start and end events, for exemple with paragraphs:
+```rust
+match markdown_events {
+    Event::Start(Tag::Paragraph) => {
+        // Add "<p>"
+    }
+    Event::End(TagEnd::Paragraph) => {
+        // Add "</p>"
+    }
+    Event::Text(text) => {
+        // This event will be fired anytime the markdown contains raw text
+    }
+    _ => {},
+}
+```
+
+Those two behaviors require to manully write HTML tags by hand, which is fine, I just wanted to use Leptos everywhere I could!
+
+Maybe there is another way to handle that. If you have ideas how I would love to know that!
 
 ## TODO
 
