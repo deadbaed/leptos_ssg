@@ -39,10 +39,28 @@ fn main() {
     let mut blog = leptos_ssg::Blog::new(target, config);
 
     let content = leptos_ssg::Content::scan_path(&content_path).unwrap();
-    blog.add_404_page();
-    blog.add_index_page(&content);
-    blog.add_content_pages(&content)
+
+    fn additional_js() -> Option<leptos::prelude::AnyView> {
+        use leptos::prelude::*;
+
+        let additional_js = view! {
+            <script inner_html=r#"
+            window.goatcounter = {
+                path: function(p) { return location.host + p }
+            };
+        "#></script>
+            <script data-goatcounter="https://goatcounter.philt3r.eu/count" async src="https://goatcounter.philt3r.eu/count.js"></script>
+
+
+            <script inner_html=r#"console.log("hello leptos_ssg!")"#></script>
+        };
+        Some(additional_js.into_any())
+    }
+    blog.add_404_page(additional_js);
+    blog.add_index_page(&content, additional_js);
+    blog.add_content_pages(&content, additional_js)
         .expect("processed markdown files");
+
     blog.add_content_assets(&content_path, &content);
     blog.add_atom_feed(&content);
 

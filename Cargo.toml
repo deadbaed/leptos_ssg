@@ -1,5 +1,9 @@
 [workspace]
+resolver = "3"
 members = [".", "example"]
+
+[workspace.dependencies]
+leptos = { version = "0.8", features = ["ssr"] }
 
 [package]
 name = "leptos_ssg"
@@ -11,7 +15,7 @@ walkdir = "2"
 pulldown-cmark = "0.13"
 jiff = "0.2"
 slug = "0.1"
-leptos = { version = "0.8", features = ["ssr"] }
+leptos = { workspace = true }
 tailwind_fuse = { version = "0.3", features = ["variant"] }
 thiserror = "2"
 minify-html = "0.16"

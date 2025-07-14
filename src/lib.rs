@@ -10,6 +10,7 @@ pub use config::BuildConfig;
 pub use content::{Content, GenerateHtmlError};
 
 use atom_syndication::Feed;
+use leptos::prelude::{AnyView, RenderHtml};
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, thiserror::Error)]
@@ -33,7 +34,7 @@ struct CopyAsset {
 pub struct Blog<'config> {
     target: PathBuf,
     config: BuildConfig<'config>,
-    pages: Vec<(PathBuf, leptos::prelude::AnyView)>,
+    pages: Vec<(PathBuf, AnyView)>,
     assets: Vec<CopyAsset>,
     atom_feed: Option<Feed>,
 }
@@ -62,24 +63,33 @@ impl<'config> Blog<'config> {
         }
     }
 
-    pub fn add_404_page(&mut self) {
+    pub fn add_404_page(&mut self, additional_js: fn() -> Option<AnyView>) {
         self.pages.push((
             format!("{EXTRA_FOLDER}404.html").into(),
-            pages::not_found_page(self.config),
+            pages::not_found_page(self.config, additional_js()),
         ));
     }
 
-    pub fn add_index_page(&mut self, content: &[Content]) {
+    pub fn add_index_page(&mut self, content: &[Content], additional_js: fn() -> Option<AnyView>) {
         self.pages.push((
             format!("{WWW_FOLDER}index.html").into(),
-            pages::index(content, self.config),
+            pages::index(content, self.config, additional_js()),
         ));
     }
 
-    pub fn add_content_pages(&mut self, content: &[Content]) -> Result<(), GenerateHtmlError> {
+    pub fn add_content_pages(
+        &mut self,
+        content: &[Content],
+        additional_js: fn() -> Option<AnyView>,
+    ) -> Result<(), GenerateHtmlError> {
         let (ok, err): (Vec<_>, Vec<_>) = content
             .iter()
-            .map(|content| (content.slug(), pages::content(content, self.config)))
+            .map(|content| {
+                (
+                    content.slug(),
+                    pages::content(content, self.config, additional_js()),
+                )
+            })
             .partition(|(_, html)| html.is_ok());
 
         let ok = ok
@@ -161,7 +171,7 @@ impl<'config> Blog<'config> {
     }
 
     pub fn write_view_to_file(
-        view: leptos::prelude::AnyView,
+        view: AnyView,
         base_path: &Path,
         path: &Path,
     ) -> Result<PathBuf, BlogWriteFilesError> {
@@ -173,7 +183,7 @@ impl<'config> Blog<'config> {
             .map_err(|e| BlogWriteFilesError::CreateFolder(e.kind()))?;
 
         // Write html to file
-        let html = leptos::prelude::RenderHtml::to_html(view);
+        let html = RenderHtml::to_html(view);
         let html_bytes = if cfg!(debug_assertions) {
             html.into_bytes()
         } else {

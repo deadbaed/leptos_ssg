@@ -6,3 +6,4 @@ publish = false
 
 [dependencies]
 leptos_ssg = { path = ".." }
+leptos = { workspace = true }

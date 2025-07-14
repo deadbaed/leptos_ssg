@@ -2,7 +2,10 @@ use crate::config::BuildConfig;
 use crate::content::{Content, GenerateHtmlError};
 use crate::html::prelude::*;
 
-pub fn not_found_page<'a>(config: BuildConfig<'a>) -> AnyView {
+pub fn not_found_page<'a>(
+    config: BuildConfig<'a>,
+    additional_js: Option<impl leptos::prelude::IntoAny>,
+) -> AnyView {
     let view = leptos::view! {
         <div>"This page could not be found."</div>
         <div>"Perhaps the page you are looking for was moved, "{underline_link(config.base_url, "go to the archive", None)}" to find it!"</div>
@@ -18,11 +21,17 @@ pub fn not_found_page<'a>(config: BuildConfig<'a>) -> AnyView {
             <li>{underline_link(config.base_url, view!{ {icon_home(None)}"Home" }, None)}</li>
         }),
         view,
-        (),
+        additional_js
+            .map(|js| js.into_any())
+            .unwrap_or(().into_any()),
     )
 }
 
-pub fn content(content: &Content, config: BuildConfig) -> Result<AnyView, GenerateHtmlError> {
+pub fn content(
+    content: &Content,
+    config: BuildConfig,
+    additional_js: Option<impl leptos::prelude::IntoAny>,
+) -> Result<AnyView, GenerateHtmlError> {
     let subtitle = view! {
             <div class=tw_join!("mt-4")>{format!(
             "Posted on {} in {} ",
@@ -51,6 +60,12 @@ pub fn content(content: &Content, config: BuildConfig) -> Result<AnyView, Genera
         }.into_any()
     }).unwrap_or(().into_any());
 
+    // Additional JS
+    let additional_js = view! {
+        {crate::html::syntax_highlight(content.code_block_languages()).into_any()}
+        {additional_js.map(|js| js.into_any()).unwrap_or(().into_any())}
+    };
+
     Ok(crate::html::blog(
         content.meta().title(),
         config.website_name,
@@ -62,13 +77,15 @@ pub fn content(content: &Content, config: BuildConfig) -> Result<AnyView, Genera
             {next_navigation}
         }),
         leptos::html::article().inner_html(content_html),
-        Some(crate::html::syntax_highlight(
-            content.code_block_languages(),
-        )),
+        Some(additional_js),
     ))
 }
 
-pub fn index<'a>(content: &[Content], config: BuildConfig<'a>) -> AnyView {
+pub fn index<'a>(
+    content: &[Content],
+    config: BuildConfig<'a>,
+    additional_js: Option<impl leptos::prelude::IntoAny>,
+) -> AnyView {
     let view = content
         .iter()
         .map(|content| {
@@ -101,6 +118,8 @@ pub fn index<'a>(content: &[Content], config: BuildConfig<'a>) -> AnyView {
                 {view}
             </ul>
         },
-        (),
+        additional_js
+            .map(|js| js.into_any())
+            .unwrap_or(().into_any()),
     )
 }

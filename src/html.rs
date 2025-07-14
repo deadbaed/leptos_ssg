@@ -82,17 +82,6 @@ fn footer(timestamp: &Timestamp) -> impl IntoView {
     }
 }
 
-fn stats() -> impl IntoView {
-    view! {
-        <script inner_html=r#"
-            window.goatcounter = {
-                path: function(p) { return location.host + p }
-            };
-        "#></script>
-        <script data-goatcounter="https://goatcounter.philt3r.eu/count" async src="https://goatcounter.philt3r.eu/count.js"></script>
-    }
-}
-
 pub fn shell(
     page_title: &str,
     website_title: &str,
@@ -161,7 +150,6 @@ elements.forEach(element => {
                 </main>
                 {footer(&config.timestamp)}
                 <script inner_html=relative_timestamp></script>
-                {stats()}
                 {additional_js.into_any()}
             </body>
         </html>
