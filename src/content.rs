@@ -151,6 +151,13 @@ impl Content {
         html_output
     }
 
+    fn syntax_highlight_mapping(language: impl AsRef<str>) -> String {
+        match language.as_ref() {
+            "html" => "xml",
+            language => language,
+        }.into()
+    }
+
     /// Collect languages found in code blocks in markdown content
     pub fn code_block_languages(&self) -> impl Iterator<Item = impl AsRef<str>> {
         Self::markdown_events(&self.raw)
@@ -160,7 +167,7 @@ impl Content {
                     && let pulldown_cmark::CodeBlockKind::Fenced(lang) = kind
                     && lang != pulldown_cmark::CowStr::Borrowed("")
                 {
-                    Some(lang)
+                    Some(Self::syntax_highlight_mapping(lang))
                 } else {
                     None
                 }
@@ -405,6 +412,7 @@ impl Content {
                             pulldown_cmark::CowStr::Borrowed(""),
                         ) => "".into(),
                         pulldown_cmark::CodeBlockKind::Fenced(language) => {
+                            let language = Self::syntax_highlight_mapping(language);
                             format!(" class=\"language-{language}\"")
                         }
                     };
@@ -610,7 +618,6 @@ impl Content {
 
                 // html
                 (Event::Html(html), false) => {
-                    let html = html.to_owned();
                     let dom = match tl::parse(html.as_ref(), tl::ParserOptions::default()) {
                         Ok(dom) => dom,
                         Err(e) => {
