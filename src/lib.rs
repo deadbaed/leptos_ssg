@@ -150,7 +150,7 @@ impl<'config> Blog<'config> {
             .for_each(|(assets, slug)| {
                 // Base paths for source and target locations
                 let source_base = content_path.as_ref().join(assets);
-                let target_base = self.target.join(slug);
+                let target_base = self.target.join(WWW_FOLDER).join(slug);
 
                 Self::add_assets(&mut self.assets, &source_base, &target_base);
             });
