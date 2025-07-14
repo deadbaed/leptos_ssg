@@ -155,7 +155,8 @@ impl Content {
         match language.as_ref() {
             "html" => "xml",
             language => language,
-        }.into()
+        }
+        .into()
     }
 
     /// Collect languages found in code blocks in markdown content
@@ -654,17 +655,6 @@ impl Content {
                             .filter_map(|e| e.ok())
                             .map(|dir_entry| dir_entry.into_path())
                             .filter(|path| path.is_file())
-                            // Get image files
-                            .filter(|path| {
-                                // TODO: allow svg files as well
-                                infer::get_from_path(path)
-                                    .map(|file_type| {
-                                        file_type.is_some_and(|ft| {
-                                            ft.matcher_type() == infer::MatcherType::Image
-                                        })
-                                    })
-                                    .unwrap_or(false)
-                            })
                             // Get relative path to be accepted in the html
                             .filter_map(|path| {
                                 path.strip_prefix(assets)
@@ -675,6 +665,8 @@ impl Content {
 
                         // Sort by name
                         list_images.sort();
+
+                        println!("ImageGrid: Files retained: {:#?}", list_images);
 
                         // For each image, create html view
                         let list_images = list_images.into_iter().map(|path| {
