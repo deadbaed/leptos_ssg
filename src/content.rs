@@ -44,7 +44,7 @@ impl Content {
             .filter_map(|e| e.ok())
         {
             let path = entry.path();
-            if path.is_file() && path.extension().is_some_and(|x| x == "md") {
+            if path.is_file() && path.extension().is_some_and(|ext| ext != "md") {
                 let file_contents = std::fs::read_to_string(path)
                     .map_err(|e| ContentListError::ReadFile(e.kind()))?;
 

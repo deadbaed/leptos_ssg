@@ -118,7 +118,9 @@ impl<'config> Blog<'config> {
             .into_iter()
             .filter_map(|e| e.ok())
             .map(|dir_entry| dir_entry.into_path())
-            .filter(|path| path.is_file());
+            .filter(|path| path.is_file())
+            // Markdown files are not assets
+            .filter(|path| path.extension().is_some_and(|ext| ext != "md"));
 
         // For each source asset, get its target path
         let source_and_target_assets = source_assets.filter_map(|source| {
