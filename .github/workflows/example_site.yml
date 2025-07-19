@@ -25,7 +25,7 @@ jobs:
 
       # build website
       - uses: dtolnay/rust-toolchain@stable
-      - run: cd example && cargo run --release
+      - run: cd example && cargo run --release --features minify
 
       # github actions specific: move 404 page with other files
       - run: mv example/target/example-site/extra/404.html example/target/example-site/www/404.html

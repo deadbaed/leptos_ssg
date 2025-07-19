@@ -10,6 +10,10 @@ name = "leptos_ssg"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = []
+minify = ["dep:minify-html"]
+
 [dependencies]
 walkdir = "2"
 pulldown-cmark = "0.13"
@@ -18,7 +22,7 @@ slug = "0.1"
 leptos = { workspace = true }
 tailwind_fuse = { version = "0.3", features = ["variant"] }
 thiserror = "2"
-minify-html = "0.16"
+minify-html = { version = "0.16", optional = true }
 tl = "0.7"
 atom_syndication = "0.12"
 chrono = "0.4" # TODO: make atom_syndication work with jiff + remvoe chrono

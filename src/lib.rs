@@ -185,10 +185,12 @@ impl<'config> Blog<'config> {
 
         // Write html to file
         let html = RenderHtml::to_html(view);
-        let html_bytes = if cfg!(debug_assertions) {
-            html.into_bytes()
-        } else {
-            // Minify everything
+
+        #[cfg(not(feature = "minify"))]
+        let html_bytes = html.into_bytes();
+
+        #[cfg(feature = "minify")]
+        let html_bytes = {
             let mut cfg = minify_html::Cfg::new();
             cfg.minify_js = true;
 
