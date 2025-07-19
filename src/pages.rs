@@ -93,16 +93,20 @@ pub fn index<'a>(
                 <li class=tw_join!("flex", "flex-col", "lg:flex-wrap", "items-start")>
                     <a class=tw_join!("font-medium", "text-lg") href={format!("{}{}", config.base_url, content.slug())} >{content.meta().title()}</a>
                     " "
-                    <time datetime=content.meta().datetime().strftime(crate::RFC_3339_FORMAT).to_string() class=tw_join!("flex-none", "text-gray-400", "text-lg")>{content.meta().datetime().strftime("%F").to_string()}</time>
+                    <time datetime=content.meta().datetime().strftime(crate::RFC_3339_FORMAT).to_string() class=tw_join!("flex-none", "text-gray-600", "dark:text-gray-400", "text-lg")>{content.meta().datetime().strftime("%F").to_string()}</time>
                 </li>
             }
         }).collect_view();
 
-    let external_website = config.external_url.map(|url| {
-        view! {
-            <li>{underline_link(url, view!{ {icon_website(Some(tw_join!("text-yellow-400")))}"Website" }, None)}</li>
-        }.into_any()
-    }).unwrap_or(().into_any());
+    let external_website = config
+        .external_url
+        .map(|url| {
+            view! {
+                <li>{underline_link(url, view!{ {icon_website(None)}"Website" }, None)}</li>
+            }
+            .into_any()
+        })
+        .unwrap_or(().into_any());
 
     crate::html::home(
         config.website_name,
@@ -110,7 +114,7 @@ pub fn index<'a>(
         config.website_tagline,
         config,
         crate::html::navigation(view! {
-                <li>{underline_link(format!("{}atom.xml", config.base_url), view!{ {icon_rss(Some(tw_join!("text-yellow-400")))}"RSS" }, None)}</li>
+                <li>{underline_link(format!("{}atom.xml", config.base_url), view!{ {icon_rss(None)}"RSS" }, None)}</li>
                 {external_website}
         }),
         view! {

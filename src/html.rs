@@ -53,7 +53,7 @@ pub fn underline_link(
     class: Option<String>,
 ) -> impl IntoView {
     let class = class.unwrap_or_default();
-    let class = tw_merge!("underline", "text-yellow-400", class);
+    let class = tw_merge!("underline", "text-sky-900", "dark:text-yellow-400", class);
     view! {
         <a href=url.to_string() class=class>
             {children.into_any()}
@@ -76,7 +76,7 @@ fn footer(timestamp: &Timestamp) -> impl IntoView {
     view! {
         <footer class=tw_join!("bg-black")>
             <div class=tw_join!("container", "mx-auto", "py-8", "px-4", "sm:px-8", "md:px-16", "lg:px-32", "xl:px-64", "2xl:px-96")>
-                <p>{format!("Page generated on {timestamp} ")}<span data-relative-timestamp={timestamp.as_millisecond()}></span></p>
+                <p class=tw_join!("text-white")>{format!("Page generated on {timestamp} ")}<span data-relative-timestamp={timestamp.as_millisecond()}></span></p>
             </div>
         </footer>
     }
@@ -144,7 +144,7 @@ elements.forEach(element => {
                 <title>{title}</title>
             </head>
 
-            <body class=tw_join!("flex", "flex-col", "min-h-screen", "bg-gray-900", "text-white")>
+            <body class=tw_join!("flex", "flex-col", "min-h-screen", "bg-gray-300", "dark:bg-gray-900", "dark:text-white")>
                 <main class=tw_join!("flex-grow")>
                     {children.into_any()}
                 </main>

@@ -223,7 +223,8 @@ impl Content {
                                     "border-l-8",
                                     "border-solid",
                                     "border-gray-500",
-                                    "bg-gray-800"
+                                    "bg-gray-400",
+                                    "dark:bg-gray-800"
                                 ),
                                 text.as_ref()
                             )
@@ -321,7 +322,12 @@ impl Content {
                     current_view.push_str(
                         format!(
                             "<a href=\"{dest_url}\" class=\"{}\">",
-                            tw_join!("underline", "text-yellow-400", "break-all")
+                            tw_join!(
+                                "underline",
+                                "text-sky-900",
+                                "dark:text-yellow-400",
+                                "break-all"
+                            )
                         )
                         .as_ref(),
                     );
@@ -523,7 +529,7 @@ impl Content {
                                 "text-left",
                                 "text-sm",
                                 "font-semibold",
-                                "text-white"
+                                "dark:text-white"
                             )
                         }
                         TableState::Body => {
@@ -533,7 +539,8 @@ impl Content {
                                 "py-4",
                                 "text-sm",
                                 "whitespace-nowrap",
-                                "text-gray-300"
+                                "text-gray-700",
+                                "dark:text-gray-300"
                             )
                         }
                     };
@@ -584,7 +591,8 @@ impl Content {
                                 "border-l-8",
                                 "border-solid",
                                 "border-gray-500",
-                                "bg-gray-800"
+                                "bg-gray-400",
+                                "dark:bg-gray-800"
                             )
                         )
                         .as_ref(),
@@ -602,7 +610,7 @@ impl Content {
                     current_view.push_str(
                         format!(
                             "<input type=\"checkbox\" {checked} class=\"{}\" />",
-                            tw_join!("accent-yellow-600")
+                            tw_join!("accent-sky-900", "dark:accent-yellow-600")
                         )
                         .as_ref(),
                     );
@@ -678,7 +686,7 @@ impl Content {
                             let path = path.to_str().unwrap();
 
                             view! {
-                                    <a class=tw_join!("w-full", "h-full", "border-2", "border-dashed", "border-yellow-600") href={path.to_string()}>
+                                    <a class=tw_join!("w-full", "h-full", "border-2", "border-dashed", "border-sky-900", "dark:border-yellow-600") href={path.to_string()}>
                                         <img loading="lazy" class=tw_join!("h-auto", "max-w-32") src={path.to_string()} alt=filename />
                                     </a>
                             }

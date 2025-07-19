@@ -78,7 +78,6 @@ Maybe there is another way to handle that. If you have ideas how I would love to
 - Tiny search engine to find content faster, instead of relying on an external tool
 - Tests
 - More customizability
-- Light/dark mode
 - Respect gitignore when processing assets
 - Add [tracing](https://crates.io/crates/tracing) for better logs
 - Be [HTML compliant](https://validator.w3.org/nu/?doc=https%3A%2F%2Fdeadbaed.github.io%2Fleptos_ssg%2F)
