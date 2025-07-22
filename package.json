@@ -1,0 +1,25 @@
+{
+  "name": "leptos_ssg",
+  "version": "1.0.0",
+  "description": "A [static site generator](https://en.wikipedia.org/wiki/Static_site_generator) powered by Leptos.",
+  "main": "index.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deadbaed/leptos_ssg.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/deadbaed/leptos_ssg/issues"
+  },
+  "homepage": "https://github.com/deadbaed/leptos_ssg#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.54.1",
+    "@types/node": "^24.1.0"
+  }
+}
