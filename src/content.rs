@@ -694,7 +694,7 @@ impl Content {
 
                         // Final view with images
                         leptos::view! {
-                            <div class=tw_join!("my-4", "grid", "grid-cols-2", "gap-5")>
+                            <div data-testid="ImageGrid" class=tw_join!("my-4", "grid", "grid-cols-2", "gap-5")>
                                 {list_images}
                             </div>
                         }
