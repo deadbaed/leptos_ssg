@@ -5,7 +5,11 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("has title", async ({ page }) => {
-    await expect(page).toHaveTitle(/Demo/);
+    await expect(page).toHaveTitle(/^Demo/);
+});
+
+test("has title ending with site name", async ({ page }) => {
+    await expect(page).toHaveTitle(/ - leptos_ssg$/);
 });
 
 test("has header", async ({ page }) => {
