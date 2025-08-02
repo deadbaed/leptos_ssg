@@ -114,7 +114,7 @@ pub fn index<'a>(
         config.website_tagline,
         config,
         crate::html::navigation(view! {
-                <li>{underline_link(format!("{}atom.xml", config.base_url), view!{ {icon_rss(None)}"RSS" }, None)}</li>
+                <li>{underline_link(format!("{}atom.xml", config.base_url), view!{ {icon_rss(None)}"Web feed" }, None)}</li>
                 {external_website}
         }),
         view! {

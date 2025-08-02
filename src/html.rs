@@ -141,6 +141,7 @@ elements.forEach(element => {
                 <meta charset="utf-8" />
                 <meta name="viewport" content="width=device-width" />
                 <link rel="stylesheet" href={format!("{}{}", config.base_url, config.stylesheet_name)} />
+                <link href=format!("{}atom.xml", config.base_url) type="application/atom+xml" rel="alternate" title="Sitewide Atom feed" />
                 <title>{title}</title>
             </head>
 
