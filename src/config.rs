@@ -73,4 +73,8 @@ impl<'a> BuildConfig<'a> {
             feed_uuid,
         })
     }
+
+    pub fn absolute_url(&self) -> String {
+        format!("{}{}", self.host, self.base_url)
+    }
 }

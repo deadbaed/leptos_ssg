@@ -7,6 +7,7 @@ View the [example demo site](https://deadbaed.github.io/leptos_ssg/)!
 ## Features
 
 - Content written in markdown
+- Code hightlight with [highlight.js](https://highlightjs.org)
 - HTML render of the content with my custom design
 - Atom feed of the content
 - Basic navigation: Previous / Next links on every article
@@ -76,11 +77,12 @@ Maybe there is another way to handle that. If you have ideas how I would love to
 - Add blurhash to images: [JavaScript](https://github.com/mad-gooze/fast-blurhash), [Rust](https://crates.io/crates/blurhash)
 - Generate `sitemap.xml` for search indexers with [sitemap-rs](https://crates.io/crates/sitemap-rs)
 - Tiny search engine to find content faster, instead of relying on an external tool
-- Tests
 - More customizability
 - Respect gitignore when processing assets
 - Add [tracing](https://crates.io/crates/tracing) for better logs
 - Be [HTML compliant](https://validator.w3.org/nu/?doc=https%3A%2F%2Fdeadbaed.github.io%2Fleptos_ssg%2F)
+- Add [Opengraph](https://ogp.me) to links
+- Create images for Opengraph
 
 ## License
 
