@@ -76,7 +76,7 @@ fn footer(timestamp: &Timestamp) -> impl IntoView {
     view! {
         <footer class=tw_join!("bg-black")>
             <div class=tw_join!("container", "mx-auto", "py-8", "px-4", "sm:px-8", "md:px-16", "lg:px-32", "xl:px-64", "2xl:px-96")>
-                <p class=tw_join!("text-white")>{format!("Page generated on {timestamp} ")}<span data-relative-timestamp={timestamp.as_millisecond()}></span></p>
+                <p class=tw_join!("text-white")>"Page generated with "{underline_link("https://github.com/deadbaed/leptos_ssg", "leptos_ssg", None)}" on "{timestamp.to_string()}" "<span data-relative-timestamp={timestamp.as_millisecond()}></span></p>
             </div>
         </footer>
     }
