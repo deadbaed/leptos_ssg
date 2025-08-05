@@ -262,9 +262,9 @@ impl Content {
                                 pulldown_cmark::HeadingLevel::H4 =>
                                     tw_join!("my-6", "font-bold", "text-xl"),
                                 pulldown_cmark::HeadingLevel::H5 =>
-                                    tw_join!("my-6", "font-bold", "text-lg"),
+                                    tw_join!("my-6", "font-semibold", "text-xl"),
                                 pulldown_cmark::HeadingLevel::H6 =>
-                                    tw_join!("my-6", "font-bold", "text-md"),
+                                    tw_join!("my-6", "font-medium", "text-xl"),
                             }
                         )
                         .as_ref(),
@@ -278,7 +278,11 @@ impl Content {
 
                 // paragraph
                 (Event::Start(Tag::Paragraph), false) => current_view.push_str(
-                    format!("<p class=\"{}\">", tw_join!("my-1.5", "text-justify")).as_ref(),
+                    format!(
+                        "<p class=\"{}\">",
+                        tw_join!("my-2", "text-lg", "text-justify")
+                    )
+                    .as_ref(),
                 ),
                 (Event::End(TagEnd::Paragraph), false) => {
                     current_view.push_str("</p>\n");
@@ -364,7 +368,9 @@ impl Content {
 
                 // list items
                 (Event::Start(Tag::Item), false) => {
-                    current_view.push_str("<li>");
+                    current_view.push_str(
+                        format!("<li class=\"{}\">", tw_join!("text-lg", "text-justify")).as_ref(),
+                    );
                 }
                 (Event::End(TagEnd::Item), false) => {
                     current_view.push_str("</li>");
