@@ -34,13 +34,8 @@ pub fn content(
 ) -> Result<AnyView, GenerateHtmlError> {
     let subtitle = view! {
             <div class=tw_join!("mt-4")>{format!(
-            "Posted on {} in {} ",
+            "Posted on {} ",
             content.meta().datetime().strftime("%B %d, %Y at %R"),
-            content.meta()
-                .datetime()
-                .time_zone()
-                .iana_name()
-                .unwrap_or_default()
         )}<span data-relative-timestamp={content.meta().datetime().timestamp().as_millisecond()}></span></div>
     };
 
