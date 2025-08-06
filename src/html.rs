@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
 pub fn underline_link(
     url: impl ToString,
     children: impl IntoAny,
-    class: Option<String>,
+    class: Option<&'static str>,
 ) -> impl IntoView {
     let class = class.unwrap_or_default();
     let class = tw_merge!("underline", "text-sky-900", "dark:text-yellow-400", class);
@@ -76,7 +76,7 @@ fn footer(timestamp: &Timestamp) -> impl IntoView {
     view! {
         <footer class=tw_join!("bg-black")>
             <div class=tw_join!("container", "mx-auto", "py-8", "px-4", "sm:px-8", "md:px-16", "lg:px-32", "xl:px-64", "2xl:px-96")>
-                <p class=tw_join!("text-white")>{format!("Page generated on {timestamp} ")}<span data-relative-timestamp={timestamp.as_millisecond()}></span></p>
+                <p class=tw_join!("text-white")>"Page generated with "{underline_link("https://github.com/deadbaed/leptos_ssg", "leptos_ssg", Some("text-yellow-400"))}" on "{timestamp.to_string()}" "<span data-relative-timestamp={timestamp.as_millisecond()}></span></p>
             </div>
         </footer>
     }
@@ -159,6 +159,7 @@ elements.forEach(element => {
                 <meta charset="utf-8" />
                 <meta name="viewport" content="width=device-width" />
                 <link rel="stylesheet" href={format!("{}{}", config.base_url, config.stylesheet_name)} />
+                <link href=format!("{}atom.xml", config.base_url) type="application/atom+xml" rel="alternate" title="Sitewide Atom feed" />
                 <title>{title}</title>
                 {additional_meta.into_any()}
             </head>

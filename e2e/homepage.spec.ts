@@ -18,18 +18,18 @@ test("has header", async ({ page }) => {
 });
 
 test("has navigation links", async ({ page }) => {
-    await expect(page.getByRole("link", { name: "RSS" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Web feed" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Website" })).toBeVisible();
 });
 
-test.fixme("has RSS feed", async ({ page }) => {
-    await page.getByRole("link", { name: "RSS" }).click();
+test.fixme("has web feed", async ({ page }) => {
+    await page.getByRole("link", { name: "Web feed" }).click();
 
     // Expect blog UUID to be present
     await expect(page.getByText("00000000-0000-4000-0000-000000000000"))
         .toBeVisible();
 });
 
-test("contains build timestamp", async ({ page }) => {
-    await expect(page.getByText("Page generated on")).toBeVisible();
+test("has footer with promotion", async ({ page }) => {
+    await expect(page.getByText("Page generated with leptos_ssg")).toBeVisible();
 });
