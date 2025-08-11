@@ -186,10 +186,10 @@ impl<'config> Blog<'config> {
         // Write html to file
         let html = RenderHtml::to_html(view);
 
-        #[cfg(not(feature = "minify"))]
+        #[cfg(not(feature = "optimize"))]
         let html_bytes = html.into_bytes();
 
-        #[cfg(feature = "minify")]
+        #[cfg(feature = "optimize")]
         let html_bytes = {
             let mut cfg = minify_html::Cfg::new();
             cfg.minify_js = true;
