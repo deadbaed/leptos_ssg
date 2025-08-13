@@ -1,9 +1,11 @@
 [workspace]
 resolver = "3"
-members = [".", "example"]
+members = [".", "example", "opengraph"]
 
 [workspace.dependencies]
 leptos = { version = "0.8", features = ["ssr"] }
+tailwind_fuse = { version = "0.3", features = ["variant"] }
+thiserror = "2"
 
 [package]
 name = "leptos_ssg"
@@ -12,7 +14,8 @@ edition = "2024"
 
 [features]
 default = []
-optimize = ["dep:minify-html"]
+optimize = ["dep:minify-html", "opengraph/optimize"]
+opengraph = ["dep:opengraph"]
 
 [dependencies]
 walkdir = "2"
@@ -20,10 +23,11 @@ pulldown-cmark = "0.13"
 jiff = "0.2"
 slug = "0.1"
 leptos = { workspace = true }
-tailwind_fuse = { version = "0.3", features = ["variant"] }
-thiserror = "2"
+tailwind_fuse = { workspace = true }
+thiserror = { workspace = true }
 minify-html = { version = "0.16", optional = true }
 tl = "0.7"
 atom_syndication = "0.12"
 chrono = "0.4" # TODO: make atom_syndication work with jiff + remvoe chrono
 uuid = { version = "1", features = ["v5"] }
+opengraph = { path = "./opengraph/", optional = true }

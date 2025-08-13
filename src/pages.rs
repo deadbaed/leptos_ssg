@@ -34,6 +34,8 @@ pub fn content(
     config: BuildConfig,
     additional_js: Option<impl leptos::prelude::IntoAny>,
 ) -> Result<AnyView, GenerateHtmlError> {
+    println!("Processing content `{}`", content.slug());
+
     let subtitle = view! {
             <div class=tw_join!("mt-4")>{format!(
             "Posted on {} ",
@@ -64,15 +66,20 @@ pub fn content(
     };
 
     let url = format!("{}{}", config.absolute_url(), content.slug());
-    // TODO: opengraph: description: have inside content description,
     let additional_meta = view! {
         <link rel="canonical" href=url.clone() />
-        {add_opengraph_property("og:type", "article").into_any()}
-        {add_opengraph_property("og:image", format!("{url}.png")).into_any()}
-        {add_opengraph_property("og:image:alt", "TODO: alt").into_any()}
-        {add_opengraph_property("og:image:width", "1200").into_any()}
-        {add_opengraph_property("og:image:height", "630").into_any()}
-        {add_opengraph_property("og:url", url).into_any()}
+        {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:type", "article").into_any()
+        }
+        {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:image", format!("{url}/opengraph.png")).into_any()
+        }
+        {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:url", url).into_any()
+        }
     };
 
     Ok(crate::html::blog(
@@ -121,14 +128,23 @@ pub fn index<'a>(
 
     let additional_meta = view! {
         <link rel="canonical" href=config.absolute_url() />
-        {add_opengraph_property("og:description", config.website_tagline).into_any()}
+        {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:description", config.website_tagline).into_any()
+        }
         <meta name="description" content=config.website_tagline />
-        {add_opengraph_property("og:type", "website").into_any()}
-        {add_opengraph_property("og:image", "https://picsum.photos/1200/630" /* format!("{}index.png", config.absolute_url()) */).into_any()}
-        {add_opengraph_property("og:image:alt", "TODO: alt").into_any()}
-        {add_opengraph_property("og:image:width", "1200").into_any()}
-        {add_opengraph_property("og:image:height", "630").into_any()}
-        {add_opengraph_property("og:url", config.absolute_url()).into_any()}
+        {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:type", "website").into_any()
+        }
+        {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:image", format!("{}opengraph.png", config.absolute_url())).into_any()
+        }
+        {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:url", config.absolute_url()).into_any()
+        }
     };
 
     crate::html::home(

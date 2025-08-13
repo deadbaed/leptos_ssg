@@ -1,6 +1,10 @@
 pub mod prelude {
     pub use super::icons::*;
-    pub use super::{add_opengraph_property, underline_link};
+
+    #[cfg(feature = "opengraph")]
+    pub use super::add_opengraph_property;
+
+    pub use super::underline_link;
     pub use leptos::prelude::*;
     pub use tailwind_fuse::tw_join;
     pub use tailwind_fuse::tw_merge;
@@ -82,6 +86,7 @@ fn footer(timestamp: &Timestamp) -> impl IntoView {
     }
 }
 
+#[cfg(feature = "opengraph")]
 pub fn add_opengraph_property(property: &str, content: impl ToString) -> impl IntoAny {
     leptos::html::meta()
         .attr("property", property)
@@ -107,7 +112,10 @@ pub fn shell(
         additional_meta.into_any()
     } else {
         view! {
-            {add_opengraph_property("og:title", title.clone()).into_any()}
+            {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:title", title.clone()).into_any()
+            }
             {additional_meta.into_any()}
         }
         .into_any()
@@ -158,7 +166,7 @@ elements.forEach(element => {
             <head>
                 <meta charset="utf-8" />
                 <meta name="viewport" content="width=device-width" />
-                <link rel="stylesheet" href={format!("{}{}", config.base_url, config.stylesheet_name)} />
+                <link rel="stylesheet" href={format!("{}{}", config.base_url, config.styles.website)} />
                 <link href=format!("{}atom.xml", config.base_url) type="application/atom+xml" rel="alternate" title="Sitewide Atom feed" />
                 <title>{title}</title>
                 {additional_meta.into_any()}

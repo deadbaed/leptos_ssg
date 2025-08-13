@@ -13,6 +13,7 @@ View the [example demo site](https://deadbaed.github.io/leptos_ssg/)!
 - Basic navigation: Previous / Next links on every article
 - Works without JavaScript, it is used only to enhance content
 - Generate custom views by inserting custom HTML tags in markdown source
+- Link previews with [opengraph](https://ogp.me), generating images for index and content pages
 
 ## Tools used
 
@@ -81,8 +82,7 @@ Maybe there is another way to handle that. If you have ideas how I would love to
 - Respect gitignore when processing assets
 - Add [tracing](https://crates.io/crates/tracing) for better logs
 - Be [HTML compliant](https://validator.w3.org/nu/?doc=https%3A%2F%2Fdeadbaed.github.io%2Fleptos_ssg%2F)
-- Add [Opengraph](https://ogp.me) to links
-- Create images for Opengraph
+- Add description field to content
 
 ## License
 

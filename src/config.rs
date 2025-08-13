@@ -8,7 +8,7 @@ pub struct BuildConfig<'a> {
     pub(crate) host: &'a str,
     pub(crate) base_url: &'a str,
     pub(crate) timestamp: Timestamp,
-    pub(crate) stylesheet_name: &'a str,
+    pub(crate) styles: Styles<'a>,
     pub(crate) assets: &'a str,
     pub(crate) logo: &'a str,
     pub(crate) website_name: &'a str,
@@ -16,6 +16,15 @@ pub struct BuildConfig<'a> {
     pub(crate) content_author: &'a str,
     pub(crate) external_url: Option<&'a str>,
     pub(crate) feed_uuid: Uuid,
+    #[cfg(feature = "opengraph")]
+    pub(crate) webdriver: &'a str,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Styles<'a> {
+    pub website: &'a str,
+    #[cfg(feature = "opengraph")]
+    pub opengraph: &'a str,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -35,7 +44,7 @@ impl<'a> BuildConfig<'a> {
         host: &'a str,
         base_url: &'a str,
         timestamp: i64,
-        stylesheet_name: &'a str,
+        styles: Styles<'a>,
         assets: &'a str,
         logo: &'a str,
         website_name: &'a str,
@@ -43,6 +52,7 @@ impl<'a> BuildConfig<'a> {
         content_author: &'a str,
         external_url: Option<&'a str>,
         feed_uuid: &'a str,
+        #[cfg(feature = "opengraph")] webdriver: &'a str,
     ) -> Result<Self, BuildConfigError<'a>> {
         if !base_url.ends_with("/") {
             return Err(BuildConfigError::TrailingSlashRequired(base_url));
@@ -63,7 +73,7 @@ impl<'a> BuildConfig<'a> {
             host,
             base_url,
             timestamp,
-            stylesheet_name,
+            styles,
             assets,
             logo,
             website_name,
@@ -71,6 +81,8 @@ impl<'a> BuildConfig<'a> {
             content_author,
             external_url,
             feed_uuid,
+            #[cfg(feature = "opengraph")]
+            webdriver,
         })
     }
 

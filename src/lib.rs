@@ -7,7 +7,7 @@ mod pages;
 const LANG: &str = "en";
 const RFC_3339_FORMAT: &str = "%FT%T%:z";
 
-pub use config::BuildConfig;
+pub use config::{BuildConfig, Styles};
 pub use content::{Content, GenerateHtmlError};
 
 use atom_syndication::Feed;
@@ -24,6 +24,25 @@ pub enum BlogWriteFilesError {
 
     #[error("Failed to write to file {0}: {1}")]
     WriteFile(PathBuf, std::io::ErrorKind),
+
+    #[error("Failed to copy file to {0}: {1}")]
+    CopyFile(PathBuf, std::io::ErrorKind),
+
+    #[error("Failed to get canonical path of {0}: {1}")]
+    GetCanonicalPath(PathBuf, std::io::ErrorKind),
+
+    #[error("Path `{0}` cannot be converted to a string")]
+    PathNotString(PathBuf),
+
+    #[cfg_attr(
+        feature = "opengraph",
+        error("Failed to generate Opengraph image : {0}")
+    )]
+    #[cfg(feature = "opengraph")]
+    GenerateOpengraphImage(opengraph::Error),
+
+    #[error("Failed to write Opengraph image to {0}: {1}")]
+    WriteOpengraphImage(PathBuf, std::io::ErrorKind),
 }
 
 #[derive(Debug)]
@@ -32,10 +51,29 @@ struct CopyAsset {
     target: PathBuf,
 }
 
+#[cfg(feature = "opengraph")]
+struct OpengraphPage {
+    slug: crate::content::Slug,
+    view: AnyView,
+}
+
+struct Page {
+    view_path: PathBuf,
+    view: AnyView,
+    #[cfg(feature = "opengraph")]
+    opengraph: Option<OpengraphPage>,
+}
+
+pub struct Paths {
+    pub target: PathBuf,
+    #[cfg(feature = "opengraph")]
+    pub opengraph: PathBuf,
+}
+
 pub struct Blog<'config> {
-    target: PathBuf,
+    paths: Paths,
     config: BuildConfig<'config>,
-    pages: Vec<(PathBuf, AnyView)>,
+    pages: Vec<Page>,
     assets: Vec<CopyAsset>,
     atom_feed: Option<Feed>,
 }
@@ -53,10 +91,11 @@ const EXTRA_FOLDER: &str = "extra/";
 const WWW_FOLDER: &str = "www/";
 
 impl<'config> Blog<'config> {
-    pub fn new(target: PathBuf, config: config::BuildConfig<'config>) -> Self {
+    pub fn new(paths: Paths, config: config::BuildConfig<'config>) -> Self {
         println!("Building the following configuration: {config:#?}");
+        println!("Website will be built in {}", paths.target.display());
         Self {
-            target,
+            paths,
             config,
             pages: vec![],
             assets: vec![],
@@ -65,17 +104,29 @@ impl<'config> Blog<'config> {
     }
 
     pub fn add_404_page(&mut self, additional_js: fn() -> Option<AnyView>) {
-        self.pages.push((
-            format!("{EXTRA_FOLDER}404.html").into(),
-            pages::not_found_page(self.config, additional_js()),
-        ));
+        self.pages.push(Page {
+            view_path: format!("{EXTRA_FOLDER}404.html").into(),
+            view: pages::not_found_page(self.config, additional_js()),
+            #[cfg(feature = "opengraph")]
+            opengraph: None,
+        });
     }
 
     pub fn add_index_page(&mut self, content: &[Content], additional_js: fn() -> Option<AnyView>) {
-        self.pages.push((
-            format!("{WWW_FOLDER}index.html").into(),
-            pages::index(content, self.config, additional_js()),
-        ));
+        self.pages.push(Page {
+            view_path: format!("{WWW_FOLDER}index.html").into(),
+            view: pages::index(content, self.config, additional_js()),
+            #[cfg(feature = "opengraph")]
+            opengraph: Some(OpengraphPage {
+                view: opengraph::template::home(
+                    self.config.logo,
+                    self.config.website_name,
+                    self.config.website_tagline,
+                    self.config.absolute_url().as_ref(),
+                ),
+                slug: "_index".to_string(),
+            }),
+        });
     }
 
     pub fn add_content_pages(
@@ -83,42 +134,49 @@ impl<'config> Blog<'config> {
         content: &[Content],
         additional_js: fn() -> Option<AnyView>,
     ) -> Result<(), GenerateHtmlError> {
-        let (ok, err): (Vec<_>, Vec<_>) = content
-            .iter()
-            .map(|content| {
-                (
-                    content.slug(),
-                    pages::content(content, self.config, additional_js()),
-                )
-            })
-            .partition(|(_, html)| html.is_ok());
+        struct ProcessedContent {
+            slug: crate::content::Slug,
+            view: AnyView,
 
-        let ok = ok
-            .into_iter()
-            .map(|(slug, html)| {
-                (
-                    format!("{WWW_FOLDER}{slug}/index.html"),
-                    Result::unwrap(html),
-                )
-            })
-            .collect::<Vec<_>>();
-
-        let err = err
-            .into_iter()
-            .map(|(slug, html)| (slug, Result::unwrap_err(html)))
-            .collect::<Vec<_>>();
-
-        if !err.is_empty() {
-            println!("Failed to process the following pages:");
-            for er in err {
-                println!("{}: {}", er.0, er.1);
-            }
+            #[cfg(feature = "opengraph")]
+            opengraph: AnyView,
         }
 
-        ok.into_iter().for_each(|(slug, view)| {
-            println!("Processed {slug}");
-            self.pages.push((slug.into(), view));
-        });
+        content
+            .iter()
+            // Attempt to render content in HTML
+            .map(|content| {
+                pages::content(content, self.config, additional_js()).map(|view| (content, view))
+            })
+            // Stop when any failure occurs
+            .collect::<Result<Vec<_>, _>>()?
+            .into_iter()
+            .map(|(content, view)| ProcessedContent {
+                slug: content.slug(),
+                view,
+
+                #[cfg(feature = "opengraph")]
+                opengraph: opengraph::template::content(
+                    content.meta().title(),
+                    self.config.logo,
+                    self.config.website_name,
+                    self.config.absolute_url().as_ref(),
+                ),
+            })
+            // Add to list of final content
+            .for_each(|content| {
+                println!("Processed {}", content.slug);
+                self.pages.push(Page {
+                    view_path: format!("{WWW_FOLDER}{}/index.html", content.slug).into(),
+                    view: content.view,
+
+                    #[cfg(feature = "opengraph")]
+                    opengraph: Some(OpengraphPage {
+                        view: content.opengraph,
+                        slug: content.slug,
+                    }),
+                });
+            });
 
         Ok(())
     }
@@ -161,7 +219,7 @@ impl<'config> Blog<'config> {
             .for_each(|(assets, slug)| {
                 // Base paths for source and target locations
                 let source_base = content_path.as_ref().join(assets);
-                let target_base = self.target.join(WWW_FOLDER).join(slug);
+                let target_base = self.paths.target.join(WWW_FOLDER).join(slug);
 
                 Self::add_assets(&mut self.assets, &source_base, &target_base);
             });
@@ -171,15 +229,18 @@ impl<'config> Blog<'config> {
         self.atom_feed = Some(feed::create_feed(&self.config, content));
     }
 
-    pub fn write_view_to_file(
+    fn write_view_to_file(
         view: AnyView,
         base_path: &Path,
-        path: &Path,
+        path: impl AsRef<Path>,
     ) -> Result<PathBuf, BlogWriteFilesError> {
         // Create all parent directories
         let parent = path
+            .as_ref()
             .parent()
-            .ok_or(BlogWriteFilesError::NoParentFolder(path.to_path_buf()))?;
+            .ok_or(BlogWriteFilesError::NoParentFolder(
+                path.as_ref().to_path_buf(),
+            ))?;
         std::fs::create_dir_all(base_path.join(parent))
             .map_err(|e| BlogWriteFilesError::CreateFolder(e.kind()))?;
 
@@ -197,10 +258,14 @@ impl<'config> Blog<'config> {
             minify_html::minify(html.as_ref(), &cfg)
         };
 
-        let html_document = base_path.join(path);
+        let html_document = base_path.join(path.as_ref());
         std::fs::write(&html_document, html_bytes)
             .map_err(|e| BlogWriteFilesError::WriteFile(html_document.clone(), e.kind()))?;
-        println!("wrote `{}` to {}", path.display(), html_document.display());
+        println!(
+            "wrote `{}` to {}",
+            path.as_ref().display(),
+            html_document.display()
+        );
 
         Ok(html_document)
     }
@@ -235,16 +300,94 @@ impl<'config> Blog<'config> {
 
     /// Consume struct, write to files
     pub fn build(mut self) -> Result<PathBuf, BlogWriteFilesError> {
-        // Create HTML files of content
-        for (path, view) in self.pages {
-            Self::write_view_to_file(view, self.target.as_path(), &path)?;
+        for Page {
+            view_path,
+            view,
+            #[cfg(feature = "opengraph")]
+            opengraph,
+        } in self.pages
+        {
+            // Render opengraph images
+            #[cfg(feature = "opengraph")]
+            if let Some(opengraph) = opengraph {
+                // Write html view to file
+                let opengraph_html_path = Self::write_view_to_file(
+                    opengraph.view,
+                    self.paths.opengraph.as_path(),
+                    format!("{}.html", opengraph.slug),
+                )?;
+                println!("opengraph: wrote template for {}", opengraph.slug);
+
+                let logo: PathBuf = format!("{}{}", self.config.assets, self.config.logo).into();
+                let logo_for_opengraph = self.paths.opengraph.join(self.config.logo);
+                std::fs::copy(&logo, &logo_for_opengraph)
+                    .map_err(|e| BlogWriteFilesError::CopyFile(logo.clone(), e.kind()))?;
+                println!(
+                    "Copied `{}` to `{}`",
+                    logo.display(),
+                    logo_for_opengraph.display()
+                );
+
+                // Copy CSS stylesheet used in opengraph templates
+                let opengraph_style = self.paths.opengraph.join("opengraph_style.css");
+                std::fs::copy(self.config.styles.opengraph, &opengraph_style).map_err(|e| {
+                    BlogWriteFilesError::CopyFile(self.config.styles.opengraph.into(), e.kind())
+                })?;
+                println!(
+                    "Copied `{}` to `{}`",
+                    self.config.styles.opengraph,
+                    opengraph_style.display()
+                );
+
+                let opengraph_html_url = opengraph_html_path
+                    .canonicalize()
+                    .map_err(|e| {
+                        BlogWriteFilesError::GetCanonicalPath(opengraph_html_path.clone(), e.kind())
+                    })?
+                    .to_str()
+                    .map(|path| format!("file:///{path}"))
+                    .ok_or(BlogWriteFilesError::PathNotString(
+                        opengraph_html_path.clone(),
+                    ))?;
+
+                // Open html files and take a screenshot
+                let screenshot =
+                    opengraph::export_view_to_png(&opengraph_html_url, self.config.webdriver)
+                        .map_err(BlogWriteFilesError::GenerateOpengraphImage)?;
+
+                // Write screenshot to a file
+                let opengraph_png_path = self
+                    .paths
+                    .opengraph
+                    .join(format!("{}.png", opengraph.slug.as_str()));
+                std::fs::write(&opengraph_png_path, screenshot).map_err(|e| {
+                    BlogWriteFilesError::WriteOpengraphImage(opengraph_png_path.clone(), e.kind())
+                })?;
+
+                let target = {
+                    let filename = match opengraph.slug.as_ref() {
+                        "_index" => "opengraph.png".into(),
+                        _ => format!("{}/opengraph.png", opengraph.slug),
+                    };
+                    self.paths.target.join(WWW_FOLDER).join(filename)
+                };
+
+                // Add opengraph image to assets to copy
+                self.assets.push(CopyAsset {
+                    source: opengraph_png_path,
+                    target,
+                });
+            }
+
+            // Render views to HTML files
+            Self::write_view_to_file(view, self.paths.target.as_path(), &view_path)?;
         }
 
         // Add internal assets
         Self::add_assets(
             &mut self.assets,
             PathBuf::from(self.config.assets).as_path(),
-            self.target.join(WWW_FOLDER).as_path(),
+            self.paths.target.join(WWW_FOLDER).as_path(),
         );
 
         // Copy content assets + internal assets
@@ -254,9 +397,9 @@ impl<'config> Blog<'config> {
 
         // Atom feed
         if let Some(atom_feed) = self.atom_feed {
-            Self::write_atom_feed(atom_feed, &self.target)?;
+            Self::write_atom_feed(atom_feed, &self.paths.target)?;
         }
 
-        Ok(self.target)
+        Ok(self.paths.target)
     }
 }
