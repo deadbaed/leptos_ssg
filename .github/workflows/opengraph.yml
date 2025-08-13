@@ -14,10 +14,10 @@ jobs:
       with:
         nix_path: nixpkgs=channel:nixos-unstable
     - run: nix-shell -p tailwindcss_4 --run 'tailwindcss --cwd opengraph' > opengraph/opengraph_style.css
-    # build website
+    # build website and generate opengraph images
     - uses: dtolnay/rust-toolchain@stable
     - name: Build example site
-      run: nix-shell -p firefox geckodriver --run 'geckodriver' & cd example && cargo run --features "opengraph"
+      run: nix-shell -p firefox geckodriver xvfb-run --run 'xvfb-run --auto-servernum geckodriver' & cd example && cargo run --features "opengraph"
     # generate css with tailwind
     - uses: cachix/install-nix-action@v31
       with:
