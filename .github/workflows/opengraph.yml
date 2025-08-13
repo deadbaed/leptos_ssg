@@ -16,8 +16,7 @@ jobs:
     - run: nix-shell -p tailwindcss_4 --run 'tailwindcss --cwd opengraph' > opengraph/opengraph_style.css
     # build website and generate opengraph images
     - uses: dtolnay/rust-toolchain@stable
-    - name: Build example site
-      run: nix-shell -p firefox geckodriver xvfb-run --run 'xvfb-run --auto-servernum geckodriver' & cd example && cargo run --features "opengraph"
+    - run: nix-shell -p firefox geckodriver xvfb-run --run 'xvfb-run --auto-servernum geckodriver' & cd example && cargo run --features "opengraph"
     # generate css with tailwind
     - uses: cachix/install-nix-action@v31
       with:
@@ -26,12 +25,9 @@ jobs:
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
-    - name: Install dependencies
-      run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: cd opengraph && npx playwright test
+    - run: npm ci
+    - run: npx playwright install --with-deps
+    - run: cd opengraph && npx playwright test
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:

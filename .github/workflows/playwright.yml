@@ -11,8 +11,7 @@ jobs:
     - uses: actions/checkout@v4
     # build website
     - uses: dtolnay/rust-toolchain@stable
-    - name: Build example site
-      run: cd example && cargo run
+    - run: cd example && cargo run
     # generate css with tailwind
     - uses: cachix/install-nix-action@v31
       with:
@@ -21,12 +20,9 @@ jobs:
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
-    - name: Install dependencies
-      run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npx playwright test
+    - run: npm ci
+    - run: npx playwright install --with-deps
+    - run: npx playwright test
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
