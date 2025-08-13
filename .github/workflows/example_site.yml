@@ -1,4 +1,4 @@
-name: Example site
+name: Deploy example site
 
 on:
   push:
@@ -23,17 +23,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # generate opengraph css
+      - uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      - run: nix-shell -p tailwindcss_4 --run 'tailwindcss --cwd opengraph' > opengraph/opengraph_style.css
+
       # build website
       - uses: dtolnay/rust-toolchain@stable
-      - run: cd example && cargo run --release --features minify
+      - run: nix-shell -p firefox geckodriver xvfb-run --run 'xvfb-run --auto-servernum geckodriver' & cd example && cargo run --release --features opengraph optimize
 
       # github actions specific: move 404 page with other files
       - run: mv example/target/example-site/extra/404.html example/target/example-site/www/404.html
 
       # generate css with tailwind
-      - uses: cachix/install-nix-action@v31
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
       - run: cd example && nix-shell -p tailwindcss_4 --run 'tailwindcss --cwd ../src --minify' > target/example-site/www/style.css
 
       # list files to deploy
