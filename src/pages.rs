@@ -157,7 +157,7 @@ pub fn index<'a>(
                 {external_website}
         }),
         view! {
-            <ul class=tw_join!("space-y-6")>
+            <ul class=tw_join!("space-y-6") data-testid="content-list" >
                 {view}
             </ul>
         },
