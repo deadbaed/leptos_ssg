@@ -20,12 +20,21 @@ fn main() {
     let base_url = "/leptos_ssg/";
 
     let assets = "./assets/".into();
-    let target = "./target/example-site".into();
+    let target = leptos_ssg::Paths {
+        target: "./target/example-site".into(),
+        #[cfg(feature = "opengraph")]
+        opengraph: "./target/opengraph".into(),
+    };
+    let styles = leptos_ssg::Styles {
+        website: "style.css",
+        #[cfg(feature = "opengraph")]
+        opengraph: "../opengraph/opengraph_style.css",
+    };
     let config = leptos_ssg::BuildConfig::new(
         host,
         base_url,
         timestamp,
-        "style.css",
+        styles,
         assets,
         "leptos_circle.svg",
         "leptos_ssg",
@@ -33,6 +42,8 @@ fn main() {
         "John Doe",
         Some("https://github.com/deadbaed/leptos_ssg"),
         "00000000-0000-4000-0000-000000000000",
+        #[cfg(feature = "opengraph")]
+        "http://localhost:4444",
     )
     .unwrap();
     let content_path: std::path::PathBuf = "./content/".into();

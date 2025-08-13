@@ -1,0 +1,16 @@
+[package]
+name = "opengraph"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+default = []
+optimize = ["dep:oxipng"]
+
+[dependencies]
+leptos = { workspace = true }
+tailwind_fuse = { workspace = true }
+fantoccini = "0.22"
+tokio = { version = "1", features = ["rt-multi-thread"] }
+oxipng = { version = "9", optional = true }
+thiserror = { workspace = true }

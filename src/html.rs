@@ -1,5 +1,9 @@
 pub mod prelude {
     pub use super::icons::*;
+
+    #[cfg(feature = "opengraph")]
+    pub use super::add_opengraph_property;
+
     pub use super::underline_link;
     pub use leptos::prelude::*;
     pub use tailwind_fuse::tw_join;
@@ -82,17 +86,39 @@ fn footer(timestamp: &Timestamp) -> impl IntoView {
     }
 }
 
+#[cfg(feature = "opengraph")]
+pub fn add_opengraph_property(property: &str, content: impl ToString) -> impl IntoAny {
+    leptos::html::meta()
+        .attr("property", property)
+        .content(content.to_string())
+}
+
 pub fn shell(
+    error: bool,
     page_title: &str,
     website_title: &str,
     config: BuildConfig,
     children: impl IntoAny,
     additional_js: impl IntoAny,
+    additional_meta: impl IntoAny,
 ) -> AnyView {
     let title = if page_title != website_title {
         format!("{page_title} - {website_title}")
     } else {
         page_title.into()
+    };
+
+    let additional_meta = if error {
+        additional_meta.into_any()
+    } else {
+        view! {
+            {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:title", title.clone()).into_any()
+            }
+            {additional_meta.into_any()}
+        }
+        .into_any()
     };
 
     let relative_timestamp = r#"
@@ -140,9 +166,10 @@ elements.forEach(element => {
             <head>
                 <meta charset="utf-8" />
                 <meta name="viewport" content="width=device-width" />
-                <link rel="stylesheet" href={format!("{}{}", config.base_url, config.stylesheet_name)} />
+                <link rel="stylesheet" href={format!("{}{}", config.base_url, config.styles.website)} />
                 <link href=format!("{}atom.xml", config.base_url) type="application/atom+xml" rel="alternate" title="Sitewide Atom feed" />
                 <title>{title}</title>
+                {additional_meta.into_any()}
             </head>
 
             <body class=tw_join!("flex", "flex-col", "min-h-screen", "bg-gray-300", "dark:bg-gray-900", "dark:text-white")>
@@ -188,6 +215,7 @@ fn nav_and_content(header: impl IntoAny, children: impl IntoAny) -> AnyView {
 }
 
 pub fn blog(
+    error: bool,
     page_title: &str,
     website_title: &str,
     subtitle: impl IntoAny,
@@ -195,8 +223,10 @@ pub fn blog(
     header: impl IntoAny,
     children: impl IntoAny,
     additional_js: impl IntoAny,
+    additional_meta: impl IntoAny,
 ) -> AnyView {
     shell(
+        error,
         page_title,
         website_title,
         config,
@@ -205,6 +235,7 @@ pub fn blog(
             {nav_and_content(header, children).into_any()}
         }),
         additional_js,
+        additional_meta,
     )
     .into_any()
 }
@@ -217,8 +248,10 @@ pub fn home(
     header: impl IntoAny,
     children: impl IntoAny,
     additional_js: impl IntoAny,
+    additional_meta: impl IntoAny,
 ) -> AnyView {
     shell(
+        false,
         page_title,
         website_title,
         config,
@@ -232,6 +265,7 @@ pub fn home(
             {nav_and_content(header, children).into_any()}
         }),
         additional_js,
+        additional_meta,
     )
     .into_any()
 }

@@ -1,4 +1,4 @@
-name: Playwright Tests for example site
+name: Opengraph
 on:
   push:
   pull_request:
@@ -9,23 +9,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    # build website
-    - uses: dtolnay/rust-toolchain@stable
-    - run: cd example && cargo run
-    # generate css with tailwind
+    # generate opengraph css
     - uses: cachix/install-nix-action@v31
       with:
         nix_path: nixpkgs=channel:nixos-unstable
+    - run: nix-shell -p tailwindcss_4 --run 'tailwindcss --cwd opengraph' > opengraph/opengraph_style.css
+    # build website and generate opengraph images
+    - uses: dtolnay/rust-toolchain@stable
+    - run: nix-shell -p firefox geckodriver xvfb-run --run 'xvfb-run --auto-servernum geckodriver' & cd example && cargo run --features opengraph
+    # generate css with tailwind
     - run: cd example && nix-shell -p tailwindcss_4 --run 'tailwindcss --cwd ../src ' > target/example-site/style.css
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
     - run: npm ci
     - run: npx playwright install --with-deps
-    - run: npx playwright test
+    - run: cd opengraph && npx playwright test
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
         name: playwright-report
-        path: playwright-report/
+        path: opengraph/playwright-report/
         retention-days: 30
+

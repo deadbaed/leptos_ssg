@@ -6,7 +6,8 @@ publish = false
 
 [features]
 default = []
-minify = ["leptos_ssg/minify"]
+optimize = ["leptos_ssg/optimize"]
+opengraph = ["leptos_ssg/opengraph"]
 
 [dependencies]
 leptos_ssg = { path = ".." }

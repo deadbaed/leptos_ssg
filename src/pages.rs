@@ -13,6 +13,7 @@ pub fn not_found_page<'a>(
     .into_view();
 
     crate::html::blog(
+        true,
         "404 Not Found",
         config.website_name,
         icon_face_frown(None),
@@ -24,6 +25,7 @@ pub fn not_found_page<'a>(
         additional_js
             .map(|js| js.into_any())
             .unwrap_or(().into_any()),
+        ().into_any(),
     )
 }
 
@@ -32,6 +34,8 @@ pub fn content(
     config: BuildConfig,
     additional_js: Option<impl leptos::prelude::IntoAny>,
 ) -> Result<AnyView, GenerateHtmlError> {
+    println!("Processing content `{}`", content.slug());
+
     let subtitle = view! {
             <div class=tw_join!("mt-4")>{format!(
             "Posted on {} ",
@@ -61,7 +65,25 @@ pub fn content(
         {additional_js.map(|js| js.into_any()).unwrap_or(().into_any())}
     };
 
+    let url = format!("{}{}", config.absolute_url(), content.slug());
+    let additional_meta = view! {
+        <link rel="canonical" href=url.clone() />
+        {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:type", "article").into_any()
+        }
+        {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:image", format!("{url}/opengraph.png")).into_any()
+        }
+        {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:url", url).into_any()
+        }
+    };
+
     Ok(crate::html::blog(
+        false,
         content.meta().title(),
         config.website_name,
         subtitle,
@@ -73,6 +95,7 @@ pub fn content(
         }),
         leptos::html::article().inner_html(content_html),
         Some(additional_js),
+        Some(additional_meta),
     ))
 }
 
@@ -103,6 +126,27 @@ pub fn index<'a>(
         })
         .unwrap_or(().into_any());
 
+    let additional_meta = view! {
+        <link rel="canonical" href=config.absolute_url() />
+        {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:description", config.website_tagline).into_any()
+        }
+        <meta name="description" content=config.website_tagline />
+        {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:type", "website").into_any()
+        }
+        {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:image", format!("{}opengraph.png", config.absolute_url())).into_any()
+        }
+        {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:url", config.absolute_url()).into_any()
+        }
+    };
+
     crate::html::home(
         config.website_name,
         config.website_name,
@@ -113,12 +157,13 @@ pub fn index<'a>(
                 {external_website}
         }),
         view! {
-            <ul class=tw_join!("space-y-6")>
+            <ul class=tw_join!("space-y-6") data-testid="content-list" >
                 {view}
             </ul>
         },
         additional_js
             .map(|js| js.into_any())
             .unwrap_or(().into_any()),
+        additional_meta,
     )
 }

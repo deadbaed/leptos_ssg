@@ -7,7 +7,7 @@ fn jiff_to_chrono_date(zoned: &jiff::Zoned) -> chrono::DateTime<chrono::FixedOff
 }
 
 pub fn create_feed(config: &crate::BuildConfig, content: &[crate::content::Content]) -> Feed {
-    let absolute_url = format!("{}{}", config.host, config.base_url);
+    let absolute_url = config.absolute_url();
 
     let mut feed = FeedBuilder::default();
 
