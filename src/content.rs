@@ -756,7 +756,6 @@ impl Content {
             }
         }
 
-
         // Do not add any whitespace between views, they can be interpreted as a space in web
         // browsers, causing unwanted visual effects.
         let html = views.join("");
