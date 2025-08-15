@@ -8,6 +8,7 @@ pub enum Metadata {
     Title(String),
     Date(Zoned),
     Uuid(Uuid),
+    Description(String),
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -31,6 +32,7 @@ pub enum ParseValueError {
 const TAG_TITLE: &str = "title";
 const TAG_DATE: &str = "date";
 const TAG_UUID: &str = "uuid";
+const TAG_DESCRIPTION: &str = "description";
 
 impl FromStr for Metadata {
     type Err = MetadataParseError;
@@ -46,7 +48,7 @@ impl FromStr for Metadata {
 
         match key.to_lowercase().as_ref() {
             TAG_TITLE => {
-                // Remove surrounding quotes in title
+                // Remove surrounding quotes
                 let title = value.trim_matches('"');
 
                 Ok(Self::Title(title.into()))
@@ -58,13 +60,19 @@ impl FromStr for Metadata {
                 Ok(Self::Date(date))
             }
             TAG_UUID => {
-                // Remove surrounding quotes in uuid
+                // Remove surrounding quotes
                 let uuid = value.trim_matches('"');
 
                 let uuid = Uuid::from_str(uuid)
                     .map_err(ParseValueError::Uuid)
                     .map_err(|e| Self::Err::Value(key.into(), e))?;
                 Ok(Self::Uuid(uuid))
+            }
+            TAG_DESCRIPTION => {
+                // Remove surrounding quotes
+                let description = value.trim_matches('"');
+
+                Ok(Self::Description(description.into()))
             }
             _ => Err(Self::Err::UnknownTag(key.into())),
         }
@@ -125,7 +133,7 @@ impl MetadataList {
         self.0
             .iter()
             .find_map(|el| match el {
-                Metadata::Title(title) => Some(title.as_str()),
+                Metadata::Title(title) => Some(title.as_ref()),
                 _ => None,
             })
             .expect("there should be a `Metadata::Title`")
@@ -149,5 +157,15 @@ impl MetadataList {
                 _ => None,
             })
             .expect("there should be a `Metadata::Uuid`")
+    }
+
+    pub fn description(&self) -> &str {
+        self.0
+            .iter()
+            .find_map(|el| match el {
+                Metadata::Description(description) => Some(description.as_ref()),
+                _ => None,
+            })
+            .expect("there should be a `Metadata::Description`")
     }
 }
