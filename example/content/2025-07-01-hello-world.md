@@ -2,6 +2,7 @@
 title = "Hello world!"
 date = 2025-07-01T12:56:42+02:00[Europe/Paris]
 uuid = "f4db1dc7-fa89-405d-8bdb-ecbd3808b3cc"
+description = "First post with leptos_ssg"
 +++
 
 Welcome to the first post!

@@ -68,6 +68,12 @@ pub fn content(
     let url = format!("{}{}", config.absolute_url(), content.slug());
     let additional_meta = view! {
         <link rel="canonical" href=url.clone() />
+        <meta name="author" content=config.content_author />
+        {
+            #[cfg(feature = "opengraph")]
+            add_opengraph_property("og:description", content.meta().description()).into_any()
+        }
+        <meta name="description" content=content.meta().description() />
         {
             #[cfg(feature = "opengraph")]
             add_opengraph_property("og:type", "article").into_any()
