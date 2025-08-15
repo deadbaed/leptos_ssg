@@ -2,6 +2,7 @@
 title = "Create a grid of images"
 date = 2025-07-14T01:46:37+02:00[Europe/Paris]
 uuid = "093165b4-796c-44c5-9e01-3792762bf67f"
+description = "Demonstration of the custom HTML component `ImageGrid`"
 +++
 
 A feature of `leptos_ssg` is the ability to take a directory containing images, and rendering them in a grid on the HTML page.
