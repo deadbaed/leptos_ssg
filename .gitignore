@@ -11,3 +11,7 @@ node_modules/
 
 # Opengraph
 opengraph/opengraph_style.css
+
+# direnv
+.direnv/
+.envrc
