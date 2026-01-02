@@ -1,6 +1,7 @@
 use std::time::SystemTime;
 
 fn main() {
+    #[cfg(feature = "opengraph")]
     let args = std::env::args().collect::<Vec<_>>();
     #[cfg(feature = "opengraph")]
     let css_opengraph = args
