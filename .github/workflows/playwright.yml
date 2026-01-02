@@ -8,15 +8,14 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    # build website
-    - uses: dtolnay/rust-toolchain@stable
-    - run: cd example && cargo run
-    # generate css with tailwind
+    - uses: actions/checkout@v5
     - uses: cachix/install-nix-action@v31
-      with:
-        nix_path: nixpkgs=channel:nixos-unstable
-    - run: cd example && nix-shell -p tailwindcss_4 --run 'tailwindcss --cwd ../src ' > target/example-site/style.css
+    - name: Get Nixpkgs path
+      run: |
+        nixpkgs_path=$(nix eval --raw -f npins/default.nix nixpkgs)
+        echo "NIX_PATH=nixpkgs=$nixpkgs_path" >> "$GITHUB_ENV"
+    - run: nix-shell --run "cd example && cargo run"
+    - run: nix-shell --run "cd example && cp $CSS_LEPTOS_SSG target/example-site/style.css"
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*

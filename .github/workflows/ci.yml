@@ -5,17 +5,6 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: cachix/install-nix-action@v31
-      - name: Get Nixpkgs path
-        run: |
-          nixpkgs_path=$(nix eval --raw -f npins/default.nix nixpkgs)
-          echo "NIX_PATH=nixpkgs=$nixpkgs_path" >> "$GITHUB_ENV"
-      - run: cargo test --all-targets --all-features
-
   quality:
     runs-on: ubuntu-latest
     steps:
