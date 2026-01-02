@@ -8,16 +8,24 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@v5
+      - uses: cachix/install-nix-action@v31
+      - name: Get Nixpkgs path
+        run: |
+          nixpkgs_path=$(nix eval --raw -f npins/default.nix nixpkgs)
+          echo "NIX_PATH=nixpkgs=$nixpkgs_path" >> "$GITHUB_ENV"
       - run: cargo test --all-targets --all-features
 
   quality:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy, rustfmt
+      - uses: actions/checkout@v5
+      - uses: cachix/install-nix-action@v31
+      - name: Get Nixpkgs path
+        run: |
+          nixpkgs_path=$(nix eval --raw -f npins/default.nix nixpkgs)
+          echo "NIX_PATH=nixpkgs=$nixpkgs_path" >> "$GITHUB_ENV"
       - run: cargo clippy --all-targets --all-features
       - run: cargo fmt --check
+      - name: Check nix files
+        run: nix-shell --run "treefmt --ci"
