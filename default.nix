@@ -6,7 +6,12 @@
 }:
 
 let
-  tailwindLeptosSsg = "${mkTailwindStylesheet "leptos_ssg" ./src true}/style.css";
+  tailwindLeptosSsg = pkgs.writeShellScriptBin "tailwind-leptos_ssg" ''
+    echo ${mkTailwindStylesheet "leptos_ssg" ./src true}/style.css
+  '';
+  tailwindOpengraph = pkgs.writeShellScriptBin "tailwind-opengraph" ''
+    echo ${opengraph.tailwind}
+  '';
 in
 {
   shell = pkgs.mkShellNoCC {
@@ -24,6 +29,10 @@ in
       nil
       nixfmt-rfc-style
 
+      # tailwind stylesheets
+      tailwindLeptosSsg
+      tailwindOpengraph
+
       # opengraph
       opengraph.runWithGeckodriver
     ];
@@ -33,9 +42,6 @@ in
       # This can also be fixed by using oxalica/rust-overlay and specifying the rust-src extension
       # See https://discourse.nixos.org/t/rust-src-not-found-and-other-misadventures-of-developing-rust-on-nixos/11570/3?u=samuela. for more details.
       RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
-
-      CSS_LEPTOS_SSG = tailwindLeptosSsg;
-      CSS_OPENGRAPH = opengraph.tailwind;
     };
 
     shellHook = opengraph.supervisordShellHook;
