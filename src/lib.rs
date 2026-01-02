@@ -321,7 +321,7 @@ impl<'config> Blog<'config> {
                 let logo: PathBuf = format!("{}{}", self.config.assets, self.config.logo).into();
                 let logo_for_opengraph = self.paths.opengraph.join(self.config.logo);
                 std::fs::copy(&logo, &logo_for_opengraph)
-                    .map_err(|e| BlogWriteFilesError::CopyFile(logo.clone(), e.kind()))?;
+                    .map_err(|e| BlogWriteFilesError::CopyFile(logo_for_opengraph.clone(), e.kind()))?;
                 println!(
                     "Copied `{}` to `{}`",
                     logo.display(),
@@ -331,7 +331,7 @@ impl<'config> Blog<'config> {
                 // Copy CSS stylesheet used in opengraph templates
                 let opengraph_style = self.paths.opengraph.join("opengraph_style.css");
                 std::fs::copy(self.config.styles.opengraph, &opengraph_style).map_err(|e| {
-                    BlogWriteFilesError::CopyFile(self.config.styles.opengraph.into(), e.kind())
+                    BlogWriteFilesError::CopyFile(opengraph_style.clone(), e.kind())
                 })?;
                 println!(
                     "Copied `{}` to `{}`",
