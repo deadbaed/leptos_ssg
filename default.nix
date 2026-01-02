@@ -2,15 +2,16 @@
   sources ? import ./npins,
   pkgs ? import sources.nixpkgs { },
   mkTailwindStylesheet ? import ./tailwind.nix { inherit pkgs; },
-  opengraph ? import ./opengraph { inherit sources pkgs mkTailwindStylesheet; },
+  headless ? false,
+  opengraph ? import ./opengraph { inherit sources pkgs mkTailwindStylesheet headless; },
 }:
 
 let
   copyTailwindLeptosSsg = pkgs.writeShellScriptBin "cp-tailwind-leptos_ssg" ''
     cp ${mkTailwindStylesheet "leptos_ssg" ./src true}/style.css "$@"
   '';
-  tailwindOpengraph = pkgs.writeShellScriptBin "tailwind-opengraph" ''
-    echo ${opengraph.tailwind}
+  copyTailwindOpengraph = pkgs.writeShellScriptBin "cp-tailwind-opengraph" ''
+    cp ${opengraph.tailwind} "$@"
   '';
 in
 {
@@ -23,6 +24,9 @@ in
       clippy
       rust-analyzer
 
+      # node
+      nodejs
+
       # nix
       npins
       nixfmt-tree
@@ -31,7 +35,7 @@ in
 
       # tailwind stylesheets
       copyTailwindLeptosSsg
-      tailwindOpengraph
+      copyTailwindOpengraph
 
       # opengraph
       opengraph.runWithGeckodriver

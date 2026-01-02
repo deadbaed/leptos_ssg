@@ -8,17 +8,15 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    # generate opengraph css
+    - uses: actions/checkout@v5
     - uses: cachix/install-nix-action@v31
-      with:
-        nix_path: nixpkgs=channel:nixos-unstable
-    - run: nix-shell -p tailwindcss_4 --run 'tailwindcss --cwd opengraph' > opengraph/opengraph_style.css
-    # build website and generate opengraph images
-    - uses: dtolnay/rust-toolchain@stable
-    - run: nix-shell -p firefox geckodriver xvfb-run --run 'xvfb-run --auto-servernum geckodriver' & cd example && cargo run --features opengraph
-    # generate css with tailwind
-    - run: cd example && nix-shell -p tailwindcss_4 --run 'tailwindcss --cwd ../src ' > target/example-site/style.css
+    - name: Get Nixpkgs path
+      run: |
+        nixpkgs_path=$(nix eval --raw -f npins/default.nix nixpkgs)
+        echo "NIX_PATH=nixpkgs=$nixpkgs_path" >> "$GITHUB_ENV"
+    - run: nix-shell --arg headless true --run "cd example && cp-tailwind-opengraph /tmp/opengraph.css"
+    - run: nix-shell --arg headless true --run "cd example && runWithGeckodriver cargo run --features opengraph /tmp/opengraph.css"
+    - run: nix-shell --arg headless true --run "cd example && cp-tailwind-leptos_ssg target/example-site/style.css"
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
@@ -29,6 +27,11 @@ jobs:
       if: ${{ !cancelled() }}
       with:
         name: playwright-report
-        path: opengraph/playwright-report/
+        path: playwright-report/
         retention-days: 30
-
+    - name: Get supervisor logs
+      if: ${{ failure() }}
+      run: |
+        cat .supervisor/log/supervisord.log
+        cat .supervisor/log/geckodriver-stdout*
+        cat .supervisor/log/geckodriver-stderr*
