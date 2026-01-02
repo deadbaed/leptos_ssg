@@ -6,8 +6,8 @@
 }:
 
 let
-  tailwindLeptosSsg = pkgs.writeShellScriptBin "tailwind-leptos_ssg" ''
-    echo ${mkTailwindStylesheet "leptos_ssg" ./src true}/style.css
+  copyTailwindLeptosSsg = pkgs.writeShellScriptBin "cp-tailwind-leptos_ssg" ''
+    cp ${mkTailwindStylesheet "leptos_ssg" ./src true}/style.css "$@"
   '';
   tailwindOpengraph = pkgs.writeShellScriptBin "tailwind-opengraph" ''
     echo ${opengraph.tailwind}
@@ -30,7 +30,7 @@ in
       nixfmt-rfc-style
 
       # tailwind stylesheets
-      tailwindLeptosSsg
+      copyTailwindLeptosSsg
       tailwindOpengraph
 
       # opengraph
