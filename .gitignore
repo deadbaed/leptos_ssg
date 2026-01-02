@@ -10,7 +10,7 @@ node_modules/
 /playwright/.cache/
 
 # Opengraph
-opengraph/opengraph_style.css
+.supervisor/
 
 # direnv
 .direnv/

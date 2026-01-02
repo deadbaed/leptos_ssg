@@ -1,5 +1,21 @@
 {
   "pins": {
+    "nix-supervisord": {
+      "type": "GitRelease",
+      "repository": {
+        "type": "GitHub",
+        "owner": "deadbaed",
+        "repo": "nix-supervisord"
+      },
+      "pre_releases": false,
+      "version_upper_bound": null,
+      "release_prefix": null,
+      "submodules": false,
+      "version": "0.3.0",
+      "revision": "cd7d6f8097eee8a4ab9c69f5c2a5e6308e54e4cb",
+      "url": "https://api.github.com/repos/deadbaed/nix-supervisord/tarball/refs/tags/0.3.0",
+      "hash": "sha256-PZCezxfJbFCO4iMr+pcZ869tM9ib/SubVVDSGhNlkW4="
+    },
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
