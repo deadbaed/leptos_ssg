@@ -26,9 +26,9 @@ fn main() {
         opengraph: "./target/opengraph".into(),
     };
     let styles = leptos_ssg::Styles {
-        website: "style.css",
+        website: env!("CSS_LEPTOS_SSG"),
         #[cfg(feature = "opengraph")]
-        opengraph: "../opengraph/opengraph_style.css",
+        opengraph: env!("CSS_OPENGRAPH"),
     };
     let config = leptos_ssg::BuildConfig::new(
         host,
