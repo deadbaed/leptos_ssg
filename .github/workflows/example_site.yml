@@ -27,9 +27,7 @@ jobs:
         run: |
           nixpkgs_path=$(nix eval --raw -f npins/default.nix nixpkgs)
           echo "NIX_PATH=nixpkgs=$nixpkgs_path" >> "$GITHUB_ENV"
-      - run: nix-shell --arg headless true --run "cd example && cp-tailwind-opengraph /tmp/opengraph.css"
-      - run: nix-shell --arg headless true --run "cd example && runWithGeckodriver cargo run --release --features opengraph optimize /tmp/opengraph.css"
-      - run: nix-shell --arg headless true --run "cd example && cp-tailwind-leptos_ssg target/example-site/www/style.css"
+      - run: cd example && nix-shell --arg headless true --run "buildWithOpengraph"
       # github actions specific: move 404 page with other files
       - run: mv example/target/example-site/extra/404.html example/target/example-site/www/404.html
       # list files to deploy

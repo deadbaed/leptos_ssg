@@ -8,6 +8,8 @@ fn main() {
         .get(1)
         .expect("first argument is the path to the css of opengraph");
 
+    // TODO: take TOML file as input
+
     let sys_time = SystemTime::now();
     let timestamp = sys_time
         .duration_since(SystemTime::UNIX_EPOCH)
@@ -33,6 +35,11 @@ fn main() {
         opengraph: "./target/opengraph".into(),
     };
     let styles = leptos_ssg::Styles {
+        // TODO: take a file as input, and copy it to the final path
+        // do this to remove additional step of copying the css file afterwards
+        // copy it like any asset file (for production)
+        //
+        // TODO: option to not copy the file, but to use it directly (for local development)
         website: "style.css",
         #[cfg(feature = "opengraph")]
         opengraph: css_opengraph,

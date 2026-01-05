@@ -16,13 +16,17 @@ let
         cat > $out/bin/geckodriver <<EOF
         #!/bin/sh
         export PATH=\${pkgs.firefox}/bin:\$PATH
-        exec ${lib.optionalString (headless && pkgs.stdenv.isLinux) "${pkgs.xvfb-run}/bin/xvfb-run --auto-servernum "}${pkgs.geckodriver}/bin/geckodriver "\$@"
+        exec ${
+          lib.optionalString (
+            headless && pkgs.stdenv.isLinux
+          ) "${pkgs.xvfb-run}/bin/xvfb-run --auto-servernum "
+        }${pkgs.geckodriver}/bin/geckodriver "\$@"
         EOF
         chmod +x $out/bin/geckodriver
       '';
   supervisordProject = supervisord.mkSupervisor {
     project_name = "opengraph";
-    paths = supervisord.mkPaths { };
+    paths = supervisord.mkPaths { folder = ".opengraph-supervisor"; };
     programs = [
       {
         name = "geckodriver";
