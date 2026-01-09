@@ -4,7 +4,7 @@ on:
   pull_request:
   workflow_dispatch:
 jobs:
-  test:
+  playwright:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
@@ -15,7 +15,7 @@ jobs:
         nixpkgs_path=$(nix eval --raw -f npins/default.nix nixpkgs)
         echo "NIX_PATH=nixpkgs=$nixpkgs_path" >> "$GITHUB_ENV"
     - run: nix-shell --run "cd example && cargo run"
-    - run: nix-shell --run "cd example && cp-tailwind-leptos_ssg target/example-site/style.css"
+    - run: nix-shell --arg release false --run "cd example && cp-tailwind-leptos_ssg target/example-site/style.css"
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*

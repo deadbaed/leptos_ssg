@@ -1,10 +1,12 @@
 {
   headless ? false,
+  release ? true,
+
   sources ? import ../npins,
   pkgs ? import sources.nixpkgs { },
   supervisord ? import sources.nix-supervisord { inherit pkgs; },
   leptos_ssg ? import ../. { inherit sources pkgs headless; },
-  cargo_nix ? pkgs.callPackage ../Cargo.nix { },
+  cargo_nix ? pkgs.callPackage ../Cargo.nix { inherit release; },
 }:
 let
   supervisordProject = supervisord.mkSupervisor {
