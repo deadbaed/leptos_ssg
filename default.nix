@@ -1,6 +1,7 @@
 {
   sources ? import ./npins,
   pkgs ? import sources.nixpkgs { },
+  fmt ? import ./fmt.nix { inherit sources pkgs; },
   mkTailwindStylesheet ? import ./tailwind.nix { inherit pkgs; },
   headless ? false,
   opengraph ? import ./opengraph {
@@ -52,12 +53,14 @@ in
       with pkgs;
       rustTools
       ++ [
+        # formatter
+        fmt
+
         # node
         nodejs
 
         # nix
         npins
-        nixfmt-tree
         nil
         nixfmt-rfc-style
         crate2nix

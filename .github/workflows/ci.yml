@@ -15,6 +15,5 @@ jobs:
           nixpkgs_path=$(nix eval --raw -f npins/default.nix nixpkgs)
           echo "NIX_PATH=nixpkgs=$nixpkgs_path" >> "$GITHUB_ENV"
       - run: cargo clippy --all-targets --all-features
-      - run: cargo fmt --check
-      - name: Check nix files
+      - name: Check formatters
         run: nix-shell --run "treefmt --ci"
