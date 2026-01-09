@@ -4,6 +4,7 @@
   pkgs ? import sources.nixpkgs { },
   supervisord ? import sources.nix-supervisord { inherit pkgs; },
   leptos_ssg ? import ../. { inherit sources pkgs headless; },
+  cargo_nix ? pkgs.callPackage ../Cargo.nix { },
 }:
 let
   supervisordProject = supervisord.mkSupervisor {
@@ -21,11 +22,18 @@ let
     ];
   };
 
+  exampleCrate = cargo_nix.workspaceMembers.example.build.override {
+    features = [
+      "optimize"
+      "opengraph"
+    ];
+  };
+
   buildWithOpengraph = pkgs.writeShellScriptBin "buildWithOpengraph" ''
     set -x
     opengraph_css=$(mktemp)
     ${leptos_ssg.tailwind.copyTailwindOpengraph}/bin/cp-tailwind-opengraph $opengraph_css
-    ${leptos_ssg.opengraph.runWithGeckodriver}/bin/runWithGeckodriver cargo run --release --features opengraph,optimize $opengraph_css
+    ${leptos_ssg.opengraph.runWithGeckodriver}/bin/runWithGeckodriver ${exampleCrate}/bin/example $opengraph_css
     ${leptos_ssg.tailwind.copyTailwindLeptosSsg}/bin/cp-tailwind-leptos_ssg target/example-site/www/style.css
     rm $opengraph_css
   '';

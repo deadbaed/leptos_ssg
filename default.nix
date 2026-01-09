@@ -23,9 +23,6 @@ let
   tailwind = {
     inherit copyTailwindLeptosSsg copyTailwindOpengraph;
   };
-  # TODO: nix module to build the crate, with different options (opengraph, optimize, release)
-  # and export it for consumers
-  # instead of calling raw `cargo build` commands
   rustTools = with pkgs; [
     rustc
     cargo
@@ -63,6 +60,7 @@ in
         nixfmt-tree
         nil
         nixfmt-rfc-style
+        crate2nix
 
         # opengraph
         opengraph.runWithGeckodriver
