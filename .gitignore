@@ -1,6 +1,5 @@
 target/
 .DS_Store
-Cargo.lock
 
 # Playwright
 node_modules/

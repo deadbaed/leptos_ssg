@@ -248,20 +248,8 @@ impl<'config> Blog<'config> {
 
         // Write html to file
         let html = RenderHtml::to_html(view);
-
-        #[cfg(not(feature = "optimize"))]
-        let html_bytes = html.into_bytes();
-
-        #[cfg(feature = "optimize")]
-        let html_bytes = {
-            let mut cfg = minify_html::Cfg::new();
-            cfg.minify_js = true;
-
-            minify_html::minify(html.as_ref(), &cfg)
-        };
-
         let html_document = base_path.join(path.as_ref());
-        std::fs::write(&html_document, html_bytes)
+        std::fs::write(&html_document, html.into_bytes())
             .map_err(|e| BlogWriteFilesError::WriteFile(html_document.clone(), e.kind()))?;
         println!(
             "wrote `{}` to {}",
