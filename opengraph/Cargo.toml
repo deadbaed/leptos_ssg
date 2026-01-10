@@ -12,5 +12,5 @@ leptos = { workspace = true }
 tailwind_fuse = { workspace = true }
 fantoccini = "0.22"
 tokio = { version = "1", features = ["rt-multi-thread"] }
-oxipng = { version = "9", optional = true }
+oxipng = { version = "10", optional = true }
 thiserror = { workspace = true }

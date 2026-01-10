@@ -2,9 +2,15 @@ pub mod template {
     use leptos::prelude::*;
     use tailwind_fuse::tw_join;
 
-    pub fn home(logo: &str, website_name: &str, website_tagline: &str, url: &str) -> AnyView {
+    pub fn home(
+        css: &str,
+        logo: &str,
+        website_name: &str,
+        website_tagline: &str,
+        url: &str,
+    ) -> AnyView {
         view! {
-        <link rel="stylesheet" href="./opengraph_style.css" />
+        <link rel="stylesheet" href=css />
         <div id="opengraph" class=tw_join!("h-[630px]", "w-[1200px]", "p-24", "bg-gray-300")>
             <div class=tw_join!("flex", "h-full", "w-full", "flex-col", "items-stretch", "justify-between")>
                 <div class=tw_join!("flex", "flex-row", "space-x-16")>
@@ -20,9 +26,9 @@ pub mod template {
         }.into_any()
     }
 
-    pub fn content(title: &str, logo: &str, website_name: &str, url: &str) -> AnyView {
+    pub fn content(css: &str, title: &str, logo: &str, website_name: &str, url: &str) -> AnyView {
         view! {
-        <link rel="stylesheet" href="./opengraph_style.css" />
+        <link rel="stylesheet" href=css />
         <div id="opengraph" class=tw_join!("h-[630px]", "w-[1200px]", "p-24", "bg-gray-300")>
             <div class=tw_join!("flex", "h-full", "w-full", "flex-col", "items-stretch", "justify-between")>
                 <div class=tw_join!("text-7xl", "font-bold")>{title}</div>

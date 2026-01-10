@@ -1,6 +1,5 @@
 target/
 .DS_Store
-Cargo.lock
 
 # Playwright
 node_modules/
@@ -9,5 +8,9 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 
-# Opengraph
-opengraph/opengraph_style.css
+# supervisor
+.*supervisor/
+
+# direnv
+.direnv/
+.envrc

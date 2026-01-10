@@ -119,6 +119,7 @@ impl<'config> Blog<'config> {
             #[cfg(feature = "opengraph")]
             opengraph: Some(OpengraphPage {
                 view: opengraph::template::home(
+                    self.config.styles.opengraph,
                     self.config.logo,
                     self.config.website_name,
                     self.config.website_tagline,
@@ -157,6 +158,7 @@ impl<'config> Blog<'config> {
 
                 #[cfg(feature = "opengraph")]
                 opengraph: opengraph::template::content(
+                    self.config.styles.opengraph,
                     content.meta().title(),
                     self.config.logo,
                     self.config.website_name,
@@ -246,20 +248,8 @@ impl<'config> Blog<'config> {
 
         // Write html to file
         let html = RenderHtml::to_html(view);
-
-        #[cfg(not(feature = "optimize"))]
-        let html_bytes = html.into_bytes();
-
-        #[cfg(feature = "optimize")]
-        let html_bytes = {
-            let mut cfg = minify_html::Cfg::new();
-            cfg.minify_js = true;
-
-            minify_html::minify(html.as_ref(), &cfg)
-        };
-
         let html_document = base_path.join(path.as_ref());
-        std::fs::write(&html_document, html_bytes)
+        std::fs::write(&html_document, html.into_bytes())
             .map_err(|e| BlogWriteFilesError::WriteFile(html_document.clone(), e.kind()))?;
         println!(
             "wrote `{}` to {}",
@@ -320,23 +310,13 @@ impl<'config> Blog<'config> {
 
                 let logo: PathBuf = format!("{}{}", self.config.assets, self.config.logo).into();
                 let logo_for_opengraph = self.paths.opengraph.join(self.config.logo);
-                std::fs::copy(&logo, &logo_for_opengraph)
-                    .map_err(|e| BlogWriteFilesError::CopyFile(logo.clone(), e.kind()))?;
+                std::fs::copy(&logo, &logo_for_opengraph).map_err(|e| {
+                    BlogWriteFilesError::CopyFile(logo_for_opengraph.clone(), e.kind())
+                })?;
                 println!(
                     "Copied `{}` to `{}`",
                     logo.display(),
                     logo_for_opengraph.display()
-                );
-
-                // Copy CSS stylesheet used in opengraph templates
-                let opengraph_style = self.paths.opengraph.join("opengraph_style.css");
-                std::fs::copy(self.config.styles.opengraph, &opengraph_style).map_err(|e| {
-                    BlogWriteFilesError::CopyFile(self.config.styles.opengraph.into(), e.kind())
-                })?;
-                println!(
-                    "Copied `{}` to `{}`",
-                    self.config.styles.opengraph,
-                    opengraph_style.display()
                 );
 
                 let opengraph_html_url = opengraph_html_path
