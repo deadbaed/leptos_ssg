@@ -15,14 +15,15 @@
 }:
 
 let
+  tailwindLeptosSsg = mkTailwindStylesheet "leptos_ssg" ./src true;
   copyTailwindLeptosSsg = pkgs.writeShellScriptBin "cp-tailwind-leptos_ssg" ''
-    cp ${mkTailwindStylesheet "leptos_ssg" ./src true}/style.css "$@"
+    cp ${tailwindLeptosSsg}/style.css "$@"
   '';
   copyTailwindOpengraph = pkgs.writeShellScriptBin "cp-tailwind-opengraph" ''
     cp ${opengraph.tailwind} "$@"
   '';
   tailwind = {
-    inherit copyTailwindLeptosSsg copyTailwindOpengraph;
+    inherit tailwindLeptosSsg copyTailwindLeptosSsg copyTailwindOpengraph;
   };
   rustTools = with pkgs; [
     rustc
