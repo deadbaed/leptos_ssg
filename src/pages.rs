@@ -38,7 +38,7 @@ pub fn content(
 
     let subtitle = view! {
             <div class=tw_join!("mt-4")>{format!(
-            "Posted on {} ",
+            "Written on {} ",
             content.meta().datetime().strftime("%B %d, %Y at %R"),
         )}<span data-relative-timestamp={content.meta().datetime().timestamp().as_millisecond()}></span></div>
     };
