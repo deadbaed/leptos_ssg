@@ -8,7 +8,7 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v7
     - uses: cachix/install-nix-action@v31
     - name: Get Nixpkgs path
       run: |
@@ -16,13 +16,13 @@ jobs:
         echo "NIX_PATH=nixpkgs=$nixpkgs_path" >> "$GITHUB_ENV"
     - run: nix-shell --run "cd example && cargo run"
     - run: nix-shell --arg release false --run "cd example && cp-tailwind-leptos_ssg target/example-site/style.css"
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v7
       with:
         node-version: lts/*
     - run: npm ci
     - run: npx playwright install --with-deps
     - run: npx playwright test
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       if: ${{ !cancelled() }}
       with:
         name: playwright-report
